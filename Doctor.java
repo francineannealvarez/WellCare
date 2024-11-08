@@ -1,7 +1,7 @@
 import java.util.Scanner;
 import java.util.ArrayList;
 import java.util.List;
-
+//ako
 public class Doctor extends User { // Extend User class
     private String department;
     private List<String> availableTimes;
