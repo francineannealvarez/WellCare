@@ -169,9 +169,6 @@ public static void signIn(Scanner scanner, PatientDatabase patientDatabase, Admi
     }
 
     public void bookAppointment(Admin admin, Scanner scanner) {
-       // if (admin != null) {
-       
-
         List<String> departments = admin.getDepartments();
         
         // Display available departments
@@ -260,11 +257,6 @@ public static void signIn(Scanner scanner, PatientDatabase patientDatabase, Admi
     
         System.out.println("Appointment booked with Dr. " + selectedDoctor.getName() + " in the " + selectedDepartment + " department on " + selectedTime);
     }
-    //else{
-       // System.out.println("Admin data not available.");
-         //   return;
-   // }
-//}
     
     // Method to get available doctors by department
     private List<Doctor> getDoctorsByDepartment(List<Doctor> doctors, String department) {
