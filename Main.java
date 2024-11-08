@@ -3,6 +3,8 @@ import java.util.Scanner;
 public class Main {
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
+        Admin admin = new Admin();
+        admin.initDepartments();
         PatientDatabase patientDatabase = new PatientDatabase(); // Create an instance of PatientDatabase
 
         int choice;
@@ -18,10 +20,10 @@ public class Main {
             
             switch (choice) {
                 case 1:
-                    Patient.patientMenu(scanner, patientDatabase); 
+                    Patient.patientMenu(scanner, patientDatabase, admin); 
                     break;
                 case 2:
-                    Doctor.DoctorMenu();
+                    Doctor.DoctorMenu(scanner);
                     break;
                 case 3:
                     if (Admin.signIn(scanner)) {
@@ -37,5 +39,7 @@ public class Main {
                     System.out.println("Invalid option. Please try again.");
             }
         } while (choice != 4);
-    }}
+        scanner.close();
+    }
+}
      //

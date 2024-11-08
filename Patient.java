@@ -12,7 +12,8 @@ public class Patient extends User {
     private String allergy;
     private String past; // past surgeries or treatments
     private String bloodtype;
-    private List<PatientHistory> historyRecords;
+    private List<PatientHistory> historyRecords = new ArrayList<>();
+
    // private PatientDatabase patientDatabase; // Assume you have a PatientDatabase class
     private Admin admin; // Reference to the Admin instance for booking appointments
 
@@ -32,6 +33,9 @@ public class Patient extends User {
         this.admin = admin;
     }
    
+    public Admin getAdmin(){
+        return admin;
+    }
 
     public Patient(String name, String password) {
         super(name, password);  
@@ -86,7 +90,7 @@ public boolean signup(Scanner scanner, PatientDatabase patientDatabase) {
     return true;
 }
 
-public static void signIn(Scanner scanner, PatientDatabase patientDatabase) {
+public static void signIn(Scanner scanner, PatientDatabase patientDatabase, Admin admin) {
     System.out.println("Sign-In:");
     System.out.print("Enter your full name: ");
     String inputName = scanner.nextLine();
@@ -100,7 +104,7 @@ public static void signIn(Scanner scanner, PatientDatabase patientDatabase) {
     // Check if the patient exists and verify the password
     if (foundPatient != null && foundPatient.getPassword().equals(inputPassword)) {
         System.out.println("Sign-in successful. Welcome, " + foundPatient.getName() + "!");
-        foundPatient.showUserOptions(scanner);
+        foundPatient.showUserOptions(scanner, admin);
     } else {
         System.out.println("Sign-in failed. Patient not found or invalid password. Please sign up first.");
     }
@@ -134,7 +138,8 @@ public static void signIn(Scanner scanner, PatientDatabase patientDatabase) {
     }*/
 
     
-    public void showUserOptions(Scanner scanner) {
+    public void showUserOptions(Scanner scanner, Admin admin) {
+
        // Scanner scanner = new Scanner(System.in);
        int choice;
         do{
@@ -164,10 +169,8 @@ public static void signIn(Scanner scanner, PatientDatabase patientDatabase) {
     }
 
     public void bookAppointment(Admin admin, Scanner scanner) {
-        if (admin == null) {
-            System.out.println("Admin data not available.");
-            return;
-        }
+       // if (admin != null) {
+       
 
         List<String> departments = admin.getDepartments();
         
@@ -257,6 +260,11 @@ public static void signIn(Scanner scanner, PatientDatabase patientDatabase) {
     
         System.out.println("Appointment booked with Dr. " + selectedDoctor.getName() + " in the " + selectedDepartment + " department on " + selectedTime);
     }
+    //else{
+       // System.out.println("Admin data not available.");
+         //   return;
+   // }
+//}
     
     // Method to get available doctors by department
     private List<Doctor> getDoctorsByDepartment(List<Doctor> doctors, String department) {
@@ -486,12 +494,12 @@ public static void signIn(Scanner scanner, PatientDatabase patientDatabase) {
     }*/
 
     public void viewMedicalHistory() {
-        if (historyRecords.isEmpty()) {
+        /*if (historyRecords.isEmpty()) {
             System.out.println("You have no medical history records.");
             return;
-        }
-    
-        System.out.println("Your Medical History:");
+        }*/
+        if (historyRecords != null && !historyRecords.isEmpty()) {
+            System.out.println("Your Medical History:");
         for (PatientHistory record : historyRecords) {
             System.out.println("Patient Name: " + record.getPatientName());
             System.out.println("Visit Date: " + record.getVisitDate());
@@ -500,9 +508,12 @@ public static void signIn(Scanner scanner, PatientDatabase patientDatabase) {
             System.out.println("Diagnosis: " + record.getDiagnosis());
             System.out.println("----------------------------------");
         }
+        } else {
+            System.out.println("No medical history records found.");
+        }
     }
     
-    public static void patientMenu(Scanner scanner, PatientDatabase patientDatabase) {
+    public static void patientMenu(Scanner scanner, PatientDatabase patientDatabase, Admin admin) {
         System.out.println("1. Signup");
         System.out.println("2. Sign in");
         System.out.println("3. Exit");
@@ -521,7 +532,7 @@ public static void signIn(Scanner scanner, PatientDatabase patientDatabase) {
                 }
                 break;
             case 2:
-                Patient.signIn(scanner, patientDatabase);
+                Patient.signIn(scanner, patientDatabase, admin);
                 break;
             case 3:
                 System.out.println("Exiting...");

@@ -1,7 +1,7 @@
 import java.util.Scanner;
 import java.util.ArrayList;
 import java.util.List;
-//ako
+
 public class Doctor extends User { // Extend User class
     private String department;
     private List<String> availableTimes;
@@ -26,8 +26,8 @@ public class Doctor extends User { // Extend User class
         return availableTimes;
     }
 
-    public static void signIn(Doctor doctor) {
-        Scanner scanner = new Scanner(System.in);
+    public static void signIn(Doctor doctor, Scanner scanner) {
+
         System.out.println("Doctor Sign-In:");
         System.out.print("Enter your name: ");
         String inputName = scanner.nextLine();
@@ -42,7 +42,6 @@ public class Doctor extends User { // Extend User class
         } else {
             System.out.println("Sign-in failed. Please check your name and password.");
         }
-        scanner.close();
     }
 
 
@@ -142,8 +141,8 @@ public class Doctor extends User { // Extend User class
         }
     }
 
-    public static void DoctorMenu(){
+    public static void DoctorMenu(Scanner scanner){
         Doctor doctor = new Doctor( "", "1appleadaykeepsthedoctoraway");
-        Doctor.signIn(doctor);
+        Doctor.signIn(doctor, scanner);
     }
 }

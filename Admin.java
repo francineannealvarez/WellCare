@@ -54,8 +54,11 @@ public class Admin {
 
     
 
-    static  {
+    public void initDepartments() {
         Admin.doctors = new ArrayList<>();
+        if (departments == null) {
+            departments = new ArrayList<>();
+        }
             departments.add("Neurology");
             departments.add("X-ray");
             departments.add("Dentistry");
