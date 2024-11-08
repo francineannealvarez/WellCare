@@ -14,8 +14,8 @@ public class Patient extends User {
     private String bloodtype;
     private List<PatientHistory> historyRecords = new ArrayList<>();
 
-   // private PatientDatabase patientDatabase; // Assume you have a PatientDatabase class
-    private Admin admin; // Reference to the Admin instance for booking appointments
+   // private PatientDatabase patientDatabase; 
+    private Admin admin; 
 
     public Patient(String name, String password, String address, String bday, String contactNo, String email,
                    String emergencyNo, String gender, String allergy, String past, String bloodtype, Admin admin) {
@@ -76,7 +76,6 @@ public boolean signup(Scanner scanner, PatientDatabase patientDatabase) {
     System.out.print("Enter your blood type: ");
     this.bloodtype = scanner.nextLine();
 
-    // Perform validation (check for empty fields)
     if (name.isEmpty() || password.isEmpty() || contactNo.isEmpty() || email.isEmpty() ||
         address.isEmpty() || bday.isEmpty() || emergencyNo.isEmpty() || gender.isEmpty() ||
         allergy.isEmpty() || bloodtype.isEmpty() || past.isEmpty()) {
@@ -111,36 +110,7 @@ public static void signIn(Scanner scanner, PatientDatabase patientDatabase, Admi
 }
 
     
-    /* Method to sign in a patient
-    public static void signIn(PatientDatabase patientDatabase) {
-        Scanner scanner = new Scanner(System.in);
-
-        System.out.println("Sign-In:");
-        System.out.print("Enter your full name: ");
-        String inputName = scanner.nextLine();
-
-        System.out.print("Enter your password: ");
-        String inputPassword = scanner.nextLine();
-
-        System.out.print("Enter your birth date (YYYY-MM-DD): ");
-        String inputBday = scanner.nextLine();
-
-        // Check if the patient exists in the database
-        Patient foundPatient = patientDatabase.findPatient(inputName, inputPassword, inputBday);
-
-        if (foundPatient != null) {
-            System.out.println("Sign-in successful. Welcome, " + foundPatient.getName() + "!");
-            foundPatient.showUserOptions(); // Show options for booking appointments and viewing medical history
-        } else {
-            System.out.println("Sign-in failed. Patient not found. Please sign up first.");
-        }
-        scanner.close();
-    }*/
-
-    
     public void showUserOptions(Scanner scanner, Admin admin) {
-
-       // Scanner scanner = new Scanner(System.in);
        int choice;
         do{
             System.out.println("\nSelect an option:");

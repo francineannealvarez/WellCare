@@ -22,7 +22,6 @@ public class Admin {
     }
     
     public static boolean signIn(Scanner scanner) {
-        //Scanner scanner = new Scanner(System.in);
         System.out.print("Enter admin username: ");
         String inputUsername = scanner.nextLine();
         System.out.print("Enter admin password: ");
