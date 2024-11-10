@@ -20,10 +20,9 @@ public class PatientHistory {
         if (doctorName == null || doctorName.trim().isEmpty()) {
             throw new IllegalArgumentException("Doctor name cannot be null or empty");
         }
-        if (diagnosis == null || diagnosis.trim().isEmpty()) {
-            throw new IllegalArgumentException("Diagnosis cannot be null or empty");
+        if (diagnosis == null || diagnosis.isEmpty()) {
+            diagnosis = "Pending";  // Set diagnosis to "Pending" if not provided
         }
-
         this.patientName = patientName;
         this.visitDate = visitDate; 
         this.department = department;
@@ -49,6 +48,14 @@ public class PatientHistory {
 
     public String getDiagnosis() {
         return diagnosis;
+    }
+
+    public void setDiagnosis(String diagnosis) {
+        if (diagnosis != null && !diagnosis.isEmpty()) {
+            this.diagnosis = diagnosis;
+        } else {
+            System.out.println("Diagnosis cannot be empty.");
+        }
     }
 
     // Override toString method for easy display of the patient's history record

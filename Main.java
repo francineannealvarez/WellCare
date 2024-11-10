@@ -2,29 +2,29 @@ import java.util.Scanner;
 
 public class Main {
     public static void main(String[] args) {
-        Scanner scanner = new Scanner(System.in);
-        Admin admin = new Admin();
-        admin.initDepartments();
-        PatientDatabase patientDatabase = new PatientDatabase(); // Create an instance of PatientDatabase
-
-        int choice;
-        do {
-            System.out.println("Welcome to the Hospital Booking System!");
-            System.out.println("1. Patient Menu");
-            System.out.println("2. Doctor");
-            System.out.println("3. Admin");
-            System.out.println("4. Exit");
-            System.out.print("Choose an option: ");
-            choice = scanner.nextInt();
-            scanner.nextLine(); 
-            
-            switch (choice) {
-                case 1:
-                    Patient.patientMenu(scanner, patientDatabase, admin); 
-                    break;
-                case 2:
-                    Doctor.DoctorMenu(scanner);
-                    break;
+            Scanner scanner = new Scanner(System.in);
+            Admin admin = new Admin();
+            admin.initDepartments();
+            PatientDatabase patientDatabase = new PatientDatabase(); // Create an instance of PatientDatabase
+    
+            int choice;
+            do {
+                System.out.println("Welcome to the Hospital Booking System!");
+                System.out.println("1. Patient Menu");
+                System.out.println("2. Doctor");
+                System.out.println("3. Admin");
+                System.out.println("4. Exit");
+                System.out.print("Choose an option: ");
+                choice = scanner.nextInt();
+                scanner.nextLine(); 
+                
+                switch (choice) {
+                    case 1:
+                        Patient.patientMenu(scanner, patientDatabase, admin); 
+                        break;
+                    case 2:
+                       Doctor.DoctorMenu(scanner);
+                     break;
                 case 3:
                     if (Admin.signIn(scanner)) {
                         Admin.adminMenu(scanner);

@@ -9,12 +9,25 @@ public class Doctor extends User { // Extend User class
 
     
     public Doctor(String name, String department) {
-        super(name, "1appleadaykeepsthedoctoraway");
+        super(name, "WellCare");
         this.name = name;
-        this.password = "1appleadaykeepsthedoctoraway";
+        this.password = "WellCare";
         this.department = department;
         this.availableTimes = new ArrayList<>();
         this.appointments = new ArrayList<>();
+        setDefaultTimes();  // Initialize default times when a doctor is created
+    }
+
+    public boolean signIn(String inputName, String inputPassword) {
+        // Check if the input name and password match the doctor's name and password
+        return this.name.equals(inputName) && this.password.equals(inputPassword);
+    }
+    // Method to set default available times
+    private void setDefaultTimes() {
+        availableTimes.add("2024-11-01 10:00 AM");
+        availableTimes.add("2024-11-01 2:00 PM");
+        availableTimes.add("2024-11-02 10:00 AM");
+        availableTimes.add("2024-11-02 2:00 PM");
     }
 
 
@@ -26,7 +39,7 @@ public class Doctor extends User { // Extend User class
         return availableTimes;
     }
 
-    public static void signIn(Doctor doctor, Scanner scanner) {
+    /*public static void signIn(Doctor doctor, Scanner scanner) {
 
         System.out.println("Doctor Sign-In:");
         System.out.print("Enter your name: ");
@@ -42,11 +55,32 @@ public class Doctor extends User { // Extend User class
         } else {
             System.out.println("Sign-in failed. Please check your name and password.");
         }
+    }*/
+    public static void DoctorMenu(Scanner scanner) {
+        // Prompt for doctor's name and password
+        System.out.print("Enter your doctor name: ");
+        String inputName = scanner.nextLine();  // Read doctor's name
+        
+        // Create a doctor object (you can add more doctors if needed)
+        Doctor doctor = new Doctor(inputName, "General"); // Using the inputName for doctor creation
+    
+        // Ask for the password
+        System.out.print("Enter your password: ");
+        String inputPassword = scanner.nextLine(); // Read the password
+        
+        // Check if the name and password match
+        if (doctor.signIn(inputName, inputPassword)) {
+            System.out.println("Sign-in successful. Welcome, Dr. " + doctor.getName() + "!");
+            doctor.showOptions(scanner, doctor);  // Proceed to show options after successful sign-in
+        } else {
+            System.out.println("Sign-in failed. Please check your name and password.");
+        }
     }
+    
 
 
-    public void showOptions() {
-        Scanner scanner = new Scanner(System.in);
+
+    public void showOptions(Scanner scanner, Doctor doctor) {
         boolean exit = false;
 
         while (!exit) {
@@ -54,43 +88,89 @@ public class Doctor extends User { // Extend User class
             System.out.println("1. Add available time");
             System.out.println("2. Delete available time");
             System.out.println("3. View schedule");
-            System.out.println("4. Exit");
+            System.out.println("4. View Appointments");
+            System.out.println("5. Add Diagnosis");
+            System.out.println("6. Exit");
+            System.out.println("Enter the number corresponding to your choice: " );
 
             int choice = scanner.nextInt();
             scanner.nextLine(); 
             
             switch (choice) {
                 case 1:
-                    addAvailableTime();
+                    addAvailableTime(scanner);
                     break;
                 case 2:
-                    deleteAvailableTime();
+                    deleteAvailableTime(scanner);
                     break;
                 case 3:
                     viewSchedule();
                     break;
                 case 4:
+                    viewDoctorAppointments(doctor);
+                    break;
+                case 5:
+                    viewPatientsAndAddDiagnosis(scanner);
+                    break;
+                case 6:
                     exit = true;
                     System.out.println("Exiting...");
                     break;
                 default:
                     System.out.println("Invalid choice. Please try again.");
             }
-            scanner.close();
         }
     }
 
-    public void addAvailableTime() {
-        Scanner scanner = new Scanner(System.in);
+
+    public void viewPatientsAndAddDiagnosis(Scanner scanner) {
+        System.out.println("Appointments:");
+        
+        if (appointments.isEmpty()) {
+            System.out.println("No patients available.");
+            return;
+        }
+    
+        // Display the list of patients with appointments
+        for (int i = 0; i < appointments.size(); i++) {
+            PatientHistory history = appointments.get(i);
+            System.out.println((i + 1) + ". " + history.getPatientName() + " - " + history.getVisitDate());
+        }
+    
+        // Let the doctor select a patient
+        System.out.print("Select a patient to add a diagnosis (enter the number): ");
+        int choice = scanner.nextInt();
+        scanner.nextLine();  // Consume the newline character
+    
+        if (choice > 0 && choice <= appointments.size()) {
+            PatientHistory selectedPatientHistory = appointments.get(choice - 1);
+            
+            // Ask for the diagnosis
+            System.out.print("Enter diagnosis: ");
+            String diagnosis = scanner.nextLine();
+            
+            // Add the diagnosis to the patient's history
+            addDiagnosisToAppointment(selectedPatientHistory, diagnosis);
+        } else {
+            System.out.println("Invalid choice. Please try again.");
+        }
+    }
+    
+    // Method to add the diagnosis to the selected patient's history
+    private void addDiagnosisToAppointment(PatientHistory historyRecord, String diagnosis) {
+        historyRecord.setDiagnosis(diagnosis);
+        System.out.println("Diagnosis added for " + historyRecord.getPatientName() + ": " + diagnosis);
+    }
+    
+    
+    public void addAvailableTime(Scanner scanner) {
         System.out.print("Enter available time to add (e.g., '2023-11-01 10:00 AM'): ");
         String time = scanner.nextLine();
         availableTimes.add(time);
         System.out.println("Time added successfully: " + time);
-        scanner.close();
     }
 
-    public void deleteAvailableTime() {
-        Scanner scanner = new Scanner(System.in);
+    public void deleteAvailableTime(Scanner scanner) {
         System.out.println("Available times:");
         for (int i = 0; i < availableTimes.size(); i++) {
             System.out.println((i + 1) + ". " + availableTimes.get(i));
@@ -106,7 +186,6 @@ public class Doctor extends User { // Extend User class
         } else {
             System.out.println("Invalid choice. Please try again.");
         }
-        scanner.close();
     }
 
     public void viewSchedule() {
@@ -123,26 +202,36 @@ public class Doctor extends User { // Extend User class
     // Adding an appointment (after a patient books it)
     public void addAppointment(PatientHistory patientHistory) {
         appointments.add(patientHistory);
-        removeAvailableTime(patientHistory.getVisitDate()); // Use getVisitDate to remove the correct time
+        System.out.println("Appointment added for patient: " + patientHistory.getPatientName());
+        System.out.println("Appointment time: " + patientHistory.getVisitDate());
+    }
+    
+    
+    public List<PatientHistory> getAppointments() {
+        return appointments;
     }
 
-    public void viewAppointments() {
-        System.out.println("Appointments for Dr. " + getName() + ":");
-        for (PatientHistory appointment : appointments) {
-            System.out.println(appointment);
+    public void viewDoctorAppointments(Doctor doctor) {
+        List<PatientHistory> appointments = doctor.getAppointments();
+        
+        if (appointments.isEmpty()) {
+            System.out.println("No appointments scheduled.");
+        } else {
+            System.out.println("Scheduled appointments for Dr. " + doctor.getName() + ":");
+            for (PatientHistory appointment : appointments) {
+                System.out.println(appointment.getPatientName() + " - " + appointment.getVisitDate());
+            }
         }
     }
+    
 
     public void removeAvailableTime(String time) {
-        if (availableTimes.remove(time)) {
-            System.out.println("Time removed successfully: " + time);
-        } else {
-            System.out.println("Time not found: " + time);
-        }
+        availableTimes.remove(time);
+    
     }
 
-    public static void DoctorMenu(Scanner scanner){
+    /*public static void DoctorMenu(Scanner scanner){
         Doctor doctor = new Doctor( "", "1appleadaykeepsthedoctoraway");
         Doctor.signIn(doctor, scanner);
-    }
+    }*/
 }

@@ -71,11 +71,14 @@ public class Admin {
     }
 
     public static void addDoctor(String name, String department) {
-        Doctor newDoctor = new Doctor(name, department);
-        doctors.add(newDoctor);
-        System.out.println("Doctor " + name + " added to " + department + " department.");
+        if (departments.contains(department)) {
+            Doctor newDoctor = new Doctor(name, department);
+            doctors.add(newDoctor);
+            System.out.println("Doctor " + name + " added to " + department + " department.");
+        } else {
+            System.out.println("Department '" + department + "' does not exist. Please add the department first.");
+        }
     }
-
     public static void removeDoctor(String name) {
         for (int i = 0; i < doctors.size(); i++) {
             if (doctors.get(i).getName().equalsIgnoreCase(name)) {
@@ -122,7 +125,6 @@ public class Admin {
     }*/
 
     public static void adminMenu(Scanner scanner) {
-        //Scanner scanner = new Scanner(System.in);
         boolean exit = false;
 
         while (!exit) {

@@ -112,7 +112,9 @@ public static void signIn(Scanner scanner, PatientDatabase patientDatabase, Admi
     
     public void showUserOptions(Scanner scanner, Admin admin) {
        int choice;
-        do{
+       boolean exit = false;
+
+        while (!exit){
             System.out.println("\nSelect an option:");
             System.out.println("1. Book an appointment");
             System.out.println("2. View medical history");
@@ -130,18 +132,20 @@ public static void signIn(Scanner scanner, PatientDatabase patientDatabase, Admi
                     viewMedicalHistory();
                     break;
                 case 3:
+                    exit = true;
                     System.out.println("Logging out...");
-                    return; 
+                    break;
                 default:
                     System.out.println("Invalid option. Please try again.");
             }
-        } while (choice != 3);
+        } 
     }
 
     public void bookAppointment(Admin admin, Scanner scanner) {
         List<String> departments = admin.getDepartments();
         
         // Display available departments
+
         System.out.println("Available departments:");
         for (int i = 0; i < departments.size(); i++) {
             System.out.println((i + 1) + ". " + departments.get(i));
@@ -217,19 +221,20 @@ public static void signIn(Scanner scanner, PatientDatabase patientDatabase, Admi
         String selectedTime = availableTimes.get(timeChoice - 1);
     
         // Create a new PatientHistory record for this appointment
-        PatientHistory newRecord = new PatientHistory(this.name, selectedTime, selectedDepartment, selectedDoctor.getName(), ""); // Issue description can be added here if needed
+        PatientHistory newRecord = new PatientHistory(this.name, selectedTime, selectedDepartment, selectedDoctor.getName(), "Pending");
         this.historyRecords.add(newRecord);
+
     
         // Inform the doctor and add the appointment
         selectedDoctor.addAppointment(newRecord);
         selectedDoctor.removeAvailableTime(selectedTime);  // Remove the booked time from availability
-    
+
     
         System.out.println("Appointment booked with Dr. " + selectedDoctor.getName() + " in the " + selectedDepartment + " department on " + selectedTime);
     }
     
     // Method to get available doctors by department
-    private List<Doctor> getDoctorsByDepartment(List<Doctor> doctors, String department) {
+    public List<Doctor> getDoctorsByDepartment(List<Doctor> doctors, String department) {
         List<Doctor> availableDoctors = new ArrayList<>();
         for (Doctor doctor : doctors) {
             if (doctor.getDepartment().equalsIgnoreCase(department) && !doctor.getAvailableTimes().isEmpty()) {
