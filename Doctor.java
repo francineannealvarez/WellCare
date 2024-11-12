@@ -7,7 +7,6 @@ public class Doctor extends User { // Extend User class
     private List<String> availableTimes;
     private List<PatientHistory> appointments;
 
-    
     public Doctor(String name, String department) {
         super(name, "WellCare");
         this.name = name;
@@ -18,10 +17,12 @@ public class Doctor extends User { // Extend User class
         setDefaultTimes();  // Initialize default times when a doctor is created
     }
 
+
     public boolean signIn(String inputName, String inputPassword) {
         // Check if the input name and password match the doctor's name and password
         return this.name.equals(inputName) && this.password.equals(inputPassword);
     }
+
     // Method to set default available times
     private void setDefaultTimes() {
         availableTimes.add("2024-11-01 10:00 AM");
@@ -29,7 +30,6 @@ public class Doctor extends User { // Extend User class
         availableTimes.add("2024-11-02 10:00 AM");
         availableTimes.add("2024-11-02 2:00 PM");
     }
-
 
     public String getDepartment() {
         return department;
@@ -39,23 +39,6 @@ public class Doctor extends User { // Extend User class
         return availableTimes;
     }
 
-    /*public static void signIn(Doctor doctor, Scanner scanner) {
-
-        System.out.println("Doctor Sign-In:");
-        System.out.print("Enter your name: ");
-        String inputName = scanner.nextLine();
-
-        System.out.print("Enter your password: ");
-        String inputPassword = scanner.nextLine();
-
-  
-        if (doctor.getName().equals(inputName) && doctor.signIn(inputPassword)) {
-            System.out.println("Sign-in successful. Welcome, Dr. " + doctor.getName() + "!");
-            doctor.showOptions(); 
-        } else {
-            System.out.println("Sign-in failed. Please check your name and password.");
-        }
-    }*/
     public static void DoctorMenu(Scanner scanner) {
         // Prompt for doctor's name and password
         System.out.print("Enter your doctor name: ");
@@ -107,7 +90,7 @@ public class Doctor extends User { // Extend User class
                     viewSchedule();
                     break;
                 case 4:
-                    viewDoctorAppointments(doctor);
+                    viewDoctorAppointments();
                     break;
                 case 5:
                     viewPatientsAndAddDiagnosis(scanner);
@@ -156,6 +139,7 @@ public class Doctor extends User { // Extend User class
         }
     }
     
+    
     // Method to add the diagnosis to the selected patient's history
     private void addDiagnosisToAppointment(PatientHistory historyRecord, String diagnosis) {
         historyRecord.setDiagnosis(diagnosis);
@@ -199,19 +183,25 @@ public class Doctor extends User { // Extend User class
         }
     }
 
+
+
     // Adding an appointment (after a patient books it)
-    public void addAppointment(PatientHistory patientHistory) {
+    public void addAppointment(PatientHistory patientHistory, String bookedTime) {
         appointments.add(patientHistory);
+        availableTimes.remove(bookedTime);  // Remove the booked time from available times
         System.out.println("Appointment added for patient: " + patientHistory.getPatientName());
         System.out.println("Appointment time: " + patientHistory.getVisitDate());
     }
+
+    
+    
     
     
     public List<PatientHistory> getAppointments() {
         return appointments;
     }
 
-    public void viewDoctorAppointments(Doctor doctor) {
+    /*public void viewDoctorAppointments(Doctor doctor) {
         List<PatientHistory> appointments = doctor.getAppointments();
         
         if (appointments.isEmpty()) {
@@ -222,7 +212,19 @@ public class Doctor extends User { // Extend User class
                 System.out.println(appointment.getPatientName() + " - " + appointment.getVisitDate());
             }
         }
+    }*/
+    public void viewDoctorAppointments() {
+        if (appointments.isEmpty()) {
+            System.out.println("No appointments scheduled for Dr. " + getName() + ".");
+        } else {
+            System.out.println("Scheduled appointments for Dr. " + getName() + ":");
+            for (PatientHistory appointment : appointments) {
+                System.out.println(appointment.getPatientName() + " - " + appointment.getVisitDate());
+            }
+        }
     }
+
+    
     
 
     public void removeAvailableTime(String time) {

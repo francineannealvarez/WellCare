@@ -4,6 +4,7 @@ public class Main {
     public static void main(String[] args) {
             Scanner scanner = new Scanner(System.in);
             Admin admin = new Admin();
+            Doctor doctor = new Doctor(null, null);
             admin.initDepartments();
             PatientDatabase patientDatabase = new PatientDatabase(); // Create an instance of PatientDatabase
     
@@ -20,7 +21,7 @@ public class Main {
                 
                 switch (choice) {
                     case 1:
-                        Patient.patientMenu(scanner, patientDatabase, admin); 
+                        Patient.patientMenu(scanner, patientDatabase, admin, doctor); 
                         break;
                     case 2:
                        Doctor.DoctorMenu(scanner);

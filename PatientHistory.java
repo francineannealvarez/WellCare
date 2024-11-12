@@ -58,6 +58,8 @@ public class PatientHistory {
         }
     }
 
+  
+
     // Override toString method for easy display of the patient's history record
     @Override
     public String toString() {

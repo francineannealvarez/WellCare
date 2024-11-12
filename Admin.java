@@ -7,6 +7,9 @@ public class Admin {
     private static List<String> departments = new ArrayList<>();
 
     
+   
+
+    
     public static void addDepartment(Scanner scanner) {
         
         System.out.print("Enter the name of the department to add: ");
@@ -54,7 +57,6 @@ public class Admin {
     
 
     public void initDepartments() {
-        Admin.doctors = new ArrayList<>();
         if (departments == null) {
             departments = new ArrayList<>();
         }
@@ -71,13 +73,25 @@ public class Admin {
     }
 
     public static void addDoctor(String name, String department) {
+        // Check if the department exists in the list
         if (departments.contains(department)) {
             Doctor newDoctor = new Doctor(name, department);
-            doctors.add(newDoctor);
+            doctors.add(newDoctor);  // Add doctor to the existing doctors list
             System.out.println("Doctor " + name + " added to " + department + " department.");
         } else {
             System.out.println("Department '" + department + "' does not exist. Please add the department first.");
         }
+    }
+    
+
+    // Get doctor by name (case-insensitive)
+    public static Doctor getDoctorByName(String name) {
+        for (Doctor doctor : doctors) {
+            if (doctor.getName().equalsIgnoreCase(name)) {  // Case-insensitive name match
+                return doctor;
+            }
+        }
+        return null;  // Return null if doctor is not found
     }
     public static void removeDoctor(String name) {
         for (int i = 0; i < doctors.size(); i++) {

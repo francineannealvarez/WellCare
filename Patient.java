@@ -13,8 +13,7 @@ public class Patient extends User {
     private String past; // past surgeries or treatments
     private String bloodtype;
     private List<PatientHistory> historyRecords = new ArrayList<>();
-
-   // private PatientDatabase patientDatabase; 
+    
     private Admin admin; 
 
     public Patient(String name, String password, String address, String bday, String contactNo, String email,
@@ -32,7 +31,9 @@ public class Patient extends User {
         this.historyRecords = new ArrayList<>();
         this.admin = admin;
     }
-   
+    
+
+
     public Admin getAdmin(){
         return admin;
     }
@@ -89,7 +90,7 @@ public boolean signup(Scanner scanner, PatientDatabase patientDatabase) {
     return true;
 }
 
-public static void signIn(Scanner scanner, PatientDatabase patientDatabase, Admin admin) {
+public static void signIn(Scanner scanner, PatientDatabase patientDatabase, Admin admin, Doctor doctor) {
     System.out.println("Sign-In:");
     System.out.print("Enter your full name: ");
     String inputName = scanner.nextLine();
@@ -103,14 +104,14 @@ public static void signIn(Scanner scanner, PatientDatabase patientDatabase, Admi
     // Check if the patient exists and verify the password
     if (foundPatient != null && foundPatient.getPassword().equals(inputPassword)) {
         System.out.println("Sign-in successful. Welcome, " + foundPatient.getName() + "!");
-        foundPatient.showUserOptions(scanner, admin);
+        foundPatient.showUserOptions(scanner, admin, doctor);
     } else {
         System.out.println("Sign-in failed. Patient not found or invalid password. Please sign up first.");
     }
 }
 
     
-    public void showUserOptions(Scanner scanner, Admin admin) {
+    public void showUserOptions(Scanner scanner, Admin admin, Doctor doctor) {
        int choice;
        boolean exit = false;
 
@@ -126,7 +127,7 @@ public static void signIn(Scanner scanner, PatientDatabase patientDatabase, Admi
 
             switch (choice) {
                 case 1:
-                    bookAppointment(admin, scanner);
+                    bookAppointment(admin, scanner, doctor);
                     break;
                 case 2:
                     viewMedicalHistory();
@@ -141,7 +142,7 @@ public static void signIn(Scanner scanner, PatientDatabase patientDatabase, Admi
         } 
     }
 
-    public void bookAppointment(Admin admin, Scanner scanner) {
+    /*public void bookAppointment(Admin admin, Scanner scanner, Doctor doctor) {
         List<String> departments = admin.getDepartments();
         
         // Display available departments
@@ -223,15 +224,123 @@ public static void signIn(Scanner scanner, PatientDatabase patientDatabase, Admi
         // Create a new PatientHistory record for this appointment
         PatientHistory newRecord = new PatientHistory(this.name, selectedTime, selectedDepartment, selectedDoctor.getName(), "Pending");
         this.historyRecords.add(newRecord);
-
-    
+       // AppointmentDeets newDeets = new AppointmentDeets(this.name, selectedTime, selectedDoctor.getName());
+        //this.appointmentDeets.add(newDeets);
+        doctor = Admin.getDoctorByName(doctor.getName());
+        
+        if (doctor != null) {
+            // Book the appointment for the selected doctor
+            AppointmentDeets newDeets = new AppointmentDeets(this.getName(), selectedTime, doctor.getName());
+            doctor.addAppointmentDeets(newDeets);  // Add to the doctor's list of appointments
+            System.out.println("Appointment booked with Dr. " + doctor.getName() + " at " + selectedTime);
+        } else {
+            System.out.println("Doctor not found. Please check the name and try again.");
+        }
+        //doctor.addAppointment(newRecord);
         // Inform the doctor and add the appointment
         selectedDoctor.addAppointment(newRecord);
         selectedDoctor.removeAvailableTime(selectedTime);  // Remove the booked time from availability
 
     
         System.out.println("Appointment booked with Dr. " + selectedDoctor.getName() + " in the " + selectedDepartment + " department on " + selectedTime);
+    }*/
+
+    public void bookAppointment(Admin admin, Scanner scanner, Doctor doctor) {
+        List<String> departments = admin.getDepartments();
+        
+        // Display available departments
+        System.out.println("Available departments:");
+        for (int i = 0; i < departments.size(); i++) {
+            System.out.println((i + 1) + ". " + departments.get(i));
+        }
+    
+        // Prompt the patient to select a department
+        System.out.print("Please select a department by entering the corresponding number: ");
+        int departmentChoice = scanner.nextInt();
+        scanner.nextLine(); 
+        
+        if (departmentChoice < 1 || departmentChoice > departments.size()) {
+            System.out.println("Invalid choice. Please try again.");
+            return;
+        }
+        
+        String selectedDepartment = departments.get(departmentChoice - 1);
+        
+        // Get the list of available doctors in the selected department from the admin
+        List<Doctor> availableDoctors = admin.getDoctors(); 
+    
+        // Filter doctors based on the selected department
+        availableDoctors = getDoctorsByDepartment(availableDoctors, selectedDepartment);
+        
+        // Display available doctors
+        System.out.println("Available doctors in the " + selectedDepartment + " department:");
+        if (availableDoctors.isEmpty()) {
+            System.out.println("No doctors available in this department.");
+            return;
+        }
+        for (int i = 0; i < availableDoctors.size(); i++) {
+            System.out.println((i + 1) + ". " + availableDoctors.get(i).getName());
+        }
+    
+        // Prompt the patient to select a doctor
+        System.out.print("Please select a doctor by entering the corresponding number: ");
+        int doctorChoice = scanner.nextInt();
+        scanner.nextLine(); 
+        
+        if (doctorChoice < 1 || doctorChoice > availableDoctors.size()) {
+            System.out.println("Invalid choice. Please try again.");
+            return;
+        }
+        
+        Doctor selectedDoctor = availableDoctors.get(doctorChoice - 1);
+        
+        // Get the available appointment times from the selected doctor
+        List<String> availableTimes = selectedDoctor.getAvailableTimes();
+        
+        // Check if there are available times
+        if (availableTimes.isEmpty()) {
+            System.out.println("Sorry, there are no available times for Dr. " + selectedDoctor.getName() + ".");
+            return;
+        }
+        
+        // Display available times
+        System.out.println("Available times for Dr. " + selectedDoctor.getName() + ":");
+        for (int i = 0; i < availableTimes.size(); i++) {
+            System.out.println((i + 1) + ". " + availableTimes.get(i));
+        }
+    
+        // Prompt the patient to select a time
+        System.out.print("Please select a time by entering the corresponding number: ");
+        int timeChoice = scanner.nextInt();
+        scanner.nextLine(); 
+        
+        if (timeChoice < 1 || timeChoice > availableTimes.size()) {
+            System.out.println("Invalid choice. Please try again.");
+            return;
+        }
+
+        // In patient or appointment booking logic
+
+
+    
+        // Get the selected time
+        String selectedTime = availableTimes.get(timeChoice - 1);
+        selectedDoctor.removeAvailableTime(selectedTime);
+    
+        // Create a new PatientHistory record for this appointment
+        PatientHistory newRecord = new PatientHistory(this.name, selectedTime, selectedDepartment, selectedDoctor.getName(), "Pending");
+        this.historyRecords.add(newRecord);
+    
+        // Inform the doctor and add the appointment
+        selectedDoctor.addAppointment(newRecord, selectedTime);
+        //PatientHistory history = new PatientHistory(this.name, selectedTime, "Pending")// Replace with actual parameter
+
+        //doctor.addAppointment(history, selectedTime);
+        //selectedDoctor.removeAvailableTime(selectedTime);  // Remove the booked time from availability
+    
+        System.out.println("Appointment booked with Dr. " + selectedDoctor.getName() + " in the " + selectedDepartment + " department on " + selectedTime);
     }
+    
     
     // Method to get available doctors by department
     public List<Doctor> getDoctorsByDepartment(List<Doctor> doctors, String department) {
@@ -480,7 +589,7 @@ public static void signIn(Scanner scanner, PatientDatabase patientDatabase, Admi
         }
     }
     
-    public static void patientMenu(Scanner scanner, PatientDatabase patientDatabase, Admin admin) {
+    public static void patientMenu(Scanner scanner, PatientDatabase patientDatabase, Admin admin, Doctor doctor) {
         System.out.println("1. Signup");
         System.out.println("2. Sign in");
         System.out.println("3. Exit");
@@ -499,7 +608,7 @@ public static void signIn(Scanner scanner, PatientDatabase patientDatabase, Admi
                 }
                 break;
             case 2:
-                Patient.signIn(scanner, patientDatabase, admin);
+                Patient.signIn(scanner, patientDatabase, admin, doctor);
                 break;
             case 3:
                 System.out.println("Exiting...");
