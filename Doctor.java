@@ -9,13 +9,13 @@ public class Doctor extends User { // Extend User class
 
     public Doctor(String name, String department) {
         super(name, "WellCare");
-        this.name = name;
         this.password = "WellCare";
         this.department = department;
         this.availableTimes = new ArrayList<>();
         this.appointments = new ArrayList<>();
         setDefaultTimes();  // Initialize default times when a doctor is created
     }
+    
 
 
     public boolean signIn(String inputName, String inputPassword) {
@@ -39,8 +39,21 @@ public class Doctor extends User { // Extend User class
         return availableTimes;
     }
 
-    public static void DoctorMenu(Scanner scanner) {
-        // Prompt for doctor's name and password
+    public static void DoctorMenu(Scanner scanner, Admin admin) {
+        System.out.print("Enter Doctor's name to view appointments: ");
+        String doctorName = scanner.nextLine();
+        Doctor loggedInDoctor = admin.getDoctorByName(doctorName);
+        
+        if (loggedInDoctor != null) {
+            System.out.println("Found doctor: " + loggedInDoctor.getName() + ", Department: " + loggedInDoctor.getDepartment());
+            loggedInDoctor.showOptions(scanner, loggedInDoctor); // Pass the retrieved doctor instance
+        } else {
+            System.out.println("Doctor not found.");
+        }
+    }
+    
+
+        /* Prompt for doctor's name and password
         System.out.print("Enter your doctor name: ");
         String inputName = scanner.nextLine();  // Read doctor's name
         
@@ -58,9 +71,9 @@ public class Doctor extends User { // Extend User class
         } else {
             System.out.println("Sign-in failed. Please check your name and password.");
         }
-    }
+    }*/
     
-
+    
 
 
     public void showOptions(Scanner scanner, Doctor doctor) {
@@ -90,7 +103,7 @@ public class Doctor extends User { // Extend User class
                     viewSchedule();
                     break;
                 case 4:
-                    viewDoctorAppointments();
+                    viewDoctorAppointments(doctor);
                     break;
                 case 5:
                     viewPatientsAndAddDiagnosis(scanner);
@@ -134,6 +147,7 @@ public class Doctor extends User { // Extend User class
             
             // Add the diagnosis to the patient's history
             addDiagnosisToAppointment(selectedPatientHistory, diagnosis);
+            appointments.remove(choice - 1);
         } else {
             System.out.println("Invalid choice. Please try again.");
         }
@@ -173,7 +187,7 @@ public class Doctor extends User { // Extend User class
     }
 
     public void viewSchedule() {
-        System.out.println("Available times for Dr. " + getName() + " in " + department + " department:");
+        System.out.println("Available times for Dr. " + this.getName() + " in " + this.department + " department:");
         if (availableTimes.isEmpty()) {
             System.out.println("No available times.");
         } else {
@@ -182,16 +196,20 @@ public class Doctor extends User { // Extend User class
             }
         }
     }
+    
 
 
 
     // Adding an appointment (after a patient books it)
-    public void addAppointment(PatientHistory patientHistory, String bookedTime) {
-        appointments.add(patientHistory);
-        availableTimes.remove(bookedTime);  // Remove the booked time from available times
-        System.out.println("Appointment added for patient: " + patientHistory.getPatientName());
-        System.out.println("Appointment time: " + patientHistory.getVisitDate());
+    public void addAppointment(PatientHistory appointment, String time, String inputName) {
+        if (this.name.equalsIgnoreCase(inputName)) {  // Ensure it matches the doctor's name
+            this.appointments.add(appointment);
+            System.out.println("Appointment added for Dr. " + getName() + ": " + appointment.getPatientName() + " at " + time);
+        } else {
+            System.out.println("Appointment not added. The name doesn't match.");
+        }
     }
+    
 
     
     
@@ -213,16 +231,19 @@ public class Doctor extends User { // Extend User class
             }
         }
     }*/
-    public void viewDoctorAppointments() {
-        if (appointments.isEmpty()) {
-            System.out.println("No appointments scheduled for Dr. " + getName() + ".");
+    public void viewDoctorAppointments(Doctor doctor) {
+        System.out.println("Total appointments for Dr. " + doctor.getName() + ": " + doctor.getAppointments().size());  // Debug
+        if (doctor.getAppointments().isEmpty()) {
+            System.out.println("No appointments scheduled for Dr. " + doctor.getName() + ".");
         } else {
-            System.out.println("Scheduled appointments for Dr. " + getName() + ":");
-            for (PatientHistory appointment : appointments) {
+            System.out.println("Scheduled appointments for Dr. " + doctor.getName() + ":");
+            for (PatientHistory appointment : doctor.getAppointments()) {
                 System.out.println(appointment.getPatientName() + " - " + appointment.getVisitDate());
             }
         }
     }
+    
+    
 
     
     

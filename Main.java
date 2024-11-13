@@ -24,11 +24,11 @@ public class Main {
                         Patient.patientMenu(scanner, patientDatabase, admin, doctor); 
                         break;
                     case 2:
-                       Doctor.DoctorMenu(scanner);
+                       Doctor.DoctorMenu(scanner, admin);
                      break;
                 case 3:
                     if (Admin.signIn(scanner)) {
-                        Admin.adminMenu(scanner);
+                        admin.adminMenu(scanner);
                     } else {
                         System.out.println("Sign-in failed. Please check your username and password.");
                     }

@@ -247,7 +247,7 @@ public static void signIn(Scanner scanner, PatientDatabase patientDatabase, Admi
 
     public void bookAppointment(Admin admin, Scanner scanner, Doctor doctor) {
         List<String> departments = admin.getDepartments();
-        
+
         // Display available departments
         System.out.println("Available departments:");
         for (int i = 0; i < departments.size(); i++) {
@@ -267,7 +267,7 @@ public static void signIn(Scanner scanner, PatientDatabase patientDatabase, Admi
         String selectedDepartment = departments.get(departmentChoice - 1);
         
         // Get the list of available doctors in the selected department from the admin
-        List<Doctor> availableDoctors = admin.getDoctors(); 
+        List<Doctor> availableDoctors = Admin.getDoctors(); 
     
         // Filter doctors based on the selected department
         availableDoctors = getDoctorsByDepartment(availableDoctors, selectedDepartment);
@@ -319,9 +319,6 @@ public static void signIn(Scanner scanner, PatientDatabase patientDatabase, Admi
             return;
         }
 
-        // In patient or appointment booking logic
-
-
     
         // Get the selected time
         String selectedTime = availableTimes.get(timeChoice - 1);
@@ -332,8 +329,12 @@ public static void signIn(Scanner scanner, PatientDatabase patientDatabase, Admi
         this.historyRecords.add(newRecord);
     
         // Inform the doctor and add the appointment
-        selectedDoctor.addAppointment(newRecord, selectedTime);
-        //PatientHistory history = new PatientHistory(this.name, selectedTime, "Pending")// Replace with actual parameter
+        // Adding debug print statements
+        selectedDoctor.addAppointment(newRecord, selectedTime, selectedDoctor.getName());
+        System.out.println("New appointment added to doctor: " + selectedDoctor.getName() +
+                        ", Patient: " + newRecord.getPatientName() + ", Time: " + selectedTime);
+        System.out.println("Total appointments for " + selectedDoctor.getName() + ": " + selectedDoctor.getAppointments().size());
+
 
         //doctor.addAppointment(history, selectedTime);
         //selectedDoctor.removeAvailableTime(selectedTime);  // Remove the booked time from availability
