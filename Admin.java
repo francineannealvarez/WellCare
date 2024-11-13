@@ -27,6 +27,14 @@ public class Admin {
         return "admin".equals(inputUsername) && "adminpass".equals(inputPassword);
     }
 
+    public static List<Doctor> getDoctors() {
+        return doctors;
+    }
+
+    public static void addDoctor(Doctor doctor) {
+        doctors.add(doctor);
+    }
+
     public List<String> getDepartments() {
         return departments;
     }
@@ -39,39 +47,30 @@ public class Admin {
         departments.add("X-ray");
         departments.add("Dentistry");
     }
-
-    public static List<Doctor> getDoctors() {
-        return doctors;
-    }
-
-    public static void addDoctor(Doctor doctor) {
-        doctors.add(doctor);
-    }
-
+   
     public void addDoctor(String doctorName, String departmentName) {
         if (departments.contains(departmentName)) {
-            // Check if a doctor with the same name already exists
             for (Doctor doctor : doctors) {
                 if (doctor.getName().equalsIgnoreCase(doctorName)) {
-                    System.out.println("Doctor " + doctorName + " already exists in the system.");
+                    System.out.println("Dr. " + doctorName + " already exists in the system.");
                     return;
                 }
             }
             
             Doctor newDoctor = new Doctor(doctorName, departmentName);
-            doctors.add(newDoctor);  // Add doctor to the list
-            System.out.println("Doctor " + doctorName + " added to " + departmentName + " department.");
+            doctors.add(newDoctor);
+            System.out.println("Dr. " + doctorName + " added to " + departmentName + " department.");
         } else {
             System.out.println("Department '" + departmentName + "' does not exist.");
         }
     }
-    // Get doctor by name (case-insensitive)
+
     public Doctor getDoctorByName(String name) {
         System.out.println("Searching for doctor: " + name);
         for (Doctor doctor : doctors) {
-            System.out.println("Checking doctor: " + doctor.getName());
+           // System.out.println("Checking doctor: " + doctor.getName());
             if (doctor.getName().equalsIgnoreCase(name)) {
-                System.out.println("Found doctor: " + doctor.getName());
+                System.out.println("Found doctor: Dr. " + doctor.getName());
                 return doctor;
             }
         }
@@ -82,11 +81,11 @@ public class Admin {
         for (int i = 0; i < doctors.size(); i++) {
             if (doctors.get(i).getName().equalsIgnoreCase(name)) {
                 doctors.remove(i);
-                System.out.println("Doctor " + name + " removed successfully.");
+                System.out.println("Dr. " + name + " removed successfully.");
                 return;
             }
         }
-        System.out.println("Doctor " + name + " not found.");
+        System.out.println("Dr. " + name + " not found.");
     }
 
     public static void viewDoctors() {
@@ -94,22 +93,23 @@ public class Admin {
         if (doctors.isEmpty()) {
             System.out.println("No doctors available.");
         } else {
-            for (Doctor doctor : doctors) {
-                System.out.println("- " + doctor.getName() + " (Department: " + doctor.getDepartment() + ")");
+            for (int i = 0; i < doctors.size(); i++) {
+                Doctor doctor = doctors.get(i);
+                System.out.println((i + 1) + ". Dr. " + doctor.getName() + " (Department: " + doctor.getDepartment() + ")");
             }
         }
     }
-
+    
     public static void showDepartments() {
         System.out.println("List of departments:");
         if (departments.isEmpty()) {
             System.out.println("No departments available.");
         } else {
-            for (String dept : departments) {
-                System.out.println("- " + dept);
+            for (int i = 0; i < departments.size(); i++) {
+                System.out.println((i + 1) + ". " + departments.get(i));
             }
         }
-    }
+    }    
 
     public void adminMenu(Scanner scanner) {
         boolean exit = false;
@@ -122,7 +122,7 @@ public class Admin {
             System.out.println("4. View Doctors");
             System.out.println("5. View Departments");
             System.out.println("6. Exit");
-            System.out.print("Select an option: ");
+            System.out.print("Please select an option by entering the corresponding number: ");
             int choice = scanner.nextInt();
             scanner.nextLine();
 
@@ -133,7 +133,7 @@ public class Admin {
                 case 2:
                     System.out.print("Enter doctor's name: ");
                     String doctorName = scanner.nextLine();
-                    System.out.print("Enter department for the doctor: ");
+                    System.out.print("Enter department for the doctor (Note: this is case sensitive): ");
                     String departmentName = scanner.nextLine();
                     addDoctor(doctorName, departmentName);
                     break;

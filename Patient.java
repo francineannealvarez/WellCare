@@ -32,8 +32,6 @@ public class Patient extends User {
         this.admin = admin;
     }
     
-
-
     public Admin getAdmin(){
         return admin;
     }
@@ -42,89 +40,86 @@ public class Patient extends User {
         super(name, password);  
     }
 
-    
-public boolean signup(Scanner scanner, PatientDatabase patientDatabase) {
-    System.out.print("Enter your name: ");
-    this.name = scanner.nextLine();
+    public boolean signup(Scanner scanner, PatientDatabase patientDatabase) {
+        System.out.print("Enter your name: ");
+        this.name = scanner.nextLine();
 
-    System.out.print("Enter your password: ");
-    this.password = scanner.nextLine();
+        System.out.print("Enter your password: ");
+        this.password = scanner.nextLine();
 
-    System.out.print("Enter your address: ");
-    this.address = scanner.nextLine();
+        System.out.print("Enter your address: ");
+        this.address = scanner.nextLine();
 
-    System.out.print("Enter your birth date (YYYY-MM-DD): ");
-    this.bday = scanner.nextLine();
+        System.out.print("Enter your birth date (YYYY-MM-DD): ");
+        this.bday = scanner.nextLine();
 
-    System.out.print("Enter your contact number: ");
-    this.contactNo = scanner.nextLine();
+        System.out.print("Enter your contact number: ");
+        this.contactNo = scanner.nextLine();
 
-    System.out.print("Enter your email: ");
-    this.email = scanner.nextLine();
+        System.out.print("Enter your email: ");
+        this.email = scanner.nextLine();
 
-    System.out.print("Enter your emergency contact number: ");
-    this.emergencyNo = scanner.nextLine();
+        System.out.print("Enter your emergency contact number: ");
+        this.emergencyNo = scanner.nextLine();
 
-    System.out.print("Enter your gender: ");
-    this.gender = scanner.nextLine();
+        System.out.print("Enter your gender: ");
+        this.gender = scanner.nextLine();
 
-    System.out.print("Enter any allergies: ");
-    this.allergy = scanner.nextLine();
+        System.out.print("Enter any allergies: ");
+        this.allergy = scanner.nextLine();
 
-    System.out.print("Enter past surgeries or treatments: ");
-    this.past = scanner.nextLine();
+        System.out.print("Enter past surgeries or treatments: ");
+        this.past = scanner.nextLine();
 
-    System.out.print("Enter your blood type: ");
-    this.bloodtype = scanner.nextLine();
+        System.out.print("Enter your blood type: ");
+        this.bloodtype = scanner.nextLine();
 
-    if (name.isEmpty() || password.isEmpty() || contactNo.isEmpty() || email.isEmpty() ||
-        address.isEmpty() || bday.isEmpty() || emergencyNo.isEmpty() || gender.isEmpty() ||
-        allergy.isEmpty() || bloodtype.isEmpty() || past.isEmpty()) {
-        System.out.println("Required fields are missing.");
-        return false;
+        if (name.isEmpty() || password.isEmpty() || contactNo.isEmpty() || email.isEmpty() ||
+            address.isEmpty() || bday.isEmpty() || emergencyNo.isEmpty() || gender.isEmpty() ||
+            allergy.isEmpty() || bloodtype.isEmpty() || past.isEmpty()) {
+            System.out.println("Required fields are missing.");
+            return false;
+        }
+
+        // Add the patient to the database
+        patientDatabase.addPatient(this);
+        System.out.println("Sign-up completed successfully!\n");
+        return true;
     }
 
-    // Add the patient to the database
-    patientDatabase.addPatient(this);
-    System.out.println("Sign-up completed successfully!\n");
-    return true;
-}
+    public static void signIn(Scanner scanner, PatientDatabase patientDatabase, Admin admin, Doctor doctor) {
+        System.out.println("Sign-In:");
+        System.out.print("Enter your full name (Note: this is case sensitive): ");
+        String inputName = scanner.nextLine();
 
-public static void signIn(Scanner scanner, PatientDatabase patientDatabase, Admin admin, Doctor doctor) {
-    System.out.println("Sign-In:");
-    System.out.print("Enter your full name: ");
-    String inputName = scanner.nextLine();
+        System.out.print("Enter your password: ");
+        String inputPassword = scanner.nextLine();
 
-    System.out.print("Enter your password: ");
-    String inputPassword = scanner.nextLine();
+        // Find the patient in the database
+        Patient foundPatient = patientDatabase.findPatient(inputName, inputPassword);
 
-    // Find the patient in the database
-    Patient foundPatient = patientDatabase.findPatient(inputName, inputPassword);
-
-    // Check if the patient exists and verify the password
-    if (foundPatient != null && foundPatient.getPassword().equals(inputPassword)) {
-        System.out.println("Sign-in successful. Welcome, " + foundPatient.getName() + "!");
-        foundPatient.showUserOptions(scanner, admin, doctor);
-    } else {
-        System.out.println("Sign-in failed. Patient not found or invalid password. Please sign up first.");
+        if (foundPatient != null && foundPatient.getPassword().equals(inputPassword)) {
+            System.out.println("Sign-in successful. Welcome, " + foundPatient.getName() + "!");
+            foundPatient.showUserOptions(scanner, admin, doctor);
+        } else {
+            System.out.println("Sign-in failed. Patient not found or invalid password.");
+        }
     }
-}
 
-    
     public void showUserOptions(Scanner scanner, Admin admin, Doctor doctor) {
        int choice;
        boolean exit = false;
 
         while (!exit){
-            System.out.println("\nSelect an option:");
+            System.out.println("\nPatient Menu");
             System.out.println("1. Book an appointment");
             System.out.println("2. View medical history");
-            System.out.println("3. Log out");
+            System.out.println("3. Entered Patient Info");
+            System.out.println("4. Log out");
             System.out.print("Choose an option: ");
             choice = scanner.nextInt();
             scanner.nextLine();
             
-
             switch (choice) {
                 case 1:
                     bookAppointment(admin, scanner, doctor);
@@ -133,6 +128,9 @@ public static void signIn(Scanner scanner, PatientDatabase patientDatabase, Admi
                     viewMedicalHistory();
                     break;
                 case 3:
+                    displayPatientInfo();
+                    break;
+                case 4:
                     exit = true;
                     System.out.println("Logging out...");
                     break;
@@ -142,119 +140,14 @@ public static void signIn(Scanner scanner, PatientDatabase patientDatabase, Admi
         } 
     }
 
-    /*public void bookAppointment(Admin admin, Scanner scanner, Doctor doctor) {
-        List<String> departments = admin.getDepartments();
-        
-        // Display available departments
-
-        System.out.println("Available departments:");
-        for (int i = 0; i < departments.size(); i++) {
-            System.out.println((i + 1) + ". " + departments.get(i));
-        }
-        
-        // Prompt the patient to select a department
-        System.out.print("Please select a department by entering the corresponding number: ");
-        int departmentChoice = scanner.nextInt();
-        scanner.nextLine(); 
-        
-        if (departmentChoice < 1 || departmentChoice > departments.size()) {
-            System.out.println("Invalid choice. Please try again.");
-            return;
-        }
-        
-        String selectedDepartment = departments.get(departmentChoice - 1);
-        
-        // Get the list of available doctors in the selected department from the admin
-        List<Doctor> availableDoctors = admin.getDoctors(); 
-
-        // Filter doctors based on the selected department
-        availableDoctors = getDoctorsByDepartment(availableDoctors, selectedDepartment);
-        
-        // Display available doctors
-        System.out.println("Available doctors in the " + selectedDepartment + " department:");
-        if (availableDoctors.isEmpty()) {
-            System.out.println("No doctors available in this department.");
-            return;
-        }
-        for (int i = 0; i < availableDoctors.size(); i++) {
-            System.out.println((i + 1) + ". " + availableDoctors.get(i).getName());
-        }
-    
-        // Prompt the patient to select a doctor
-        System.out.print("Please select a doctor by entering the corresponding number: ");
-        int doctorChoice = scanner.nextInt();
-        scanner.nextLine(); 
-        
-        if (doctorChoice < 1 || doctorChoice > availableDoctors.size()) {
-            System.out.println("Invalid choice. Please try again.");
-            return;
-        }
-        
-        Doctor selectedDoctor = availableDoctors.get(doctorChoice - 1);
-        
-        // Get the available appointment times from the selected doctor
-        List<String> availableTimes = selectedDoctor.getAvailableTimes();
-        
-        // Check if there are available times
-        if (availableTimes.isEmpty()) {
-            System.out.println("Sorry, there are no available times for Dr. " + selectedDoctor.getName() + ".");
-            return;
-        }
-        
-        // Display available times
-        System.out.println("Available times for Dr. " + selectedDoctor.getName() + ":");
-        for (int i = 0; i < availableTimes.size(); i++) {
-            System.out.println((i + 1) + ". " + availableTimes.get(i));
-        }
-    
-        // Prompt the patient to select a time
-        System.out.print("Please select a time by entering the corresponding number: ");
-        int timeChoice = scanner.nextInt();
-        scanner.nextLine();
-        
-        // Validate the choice
-        if (timeChoice < 1 || timeChoice > availableTimes.size()) {
-            System.out.println("Invalid choice. Please try again.");
-            return;
-        }
-    
-        // Get the selected time
-        String selectedTime = availableTimes.get(timeChoice - 1);
-    
-        // Create a new PatientHistory record for this appointment
-        PatientHistory newRecord = new PatientHistory(this.name, selectedTime, selectedDepartment, selectedDoctor.getName(), "Pending");
-        this.historyRecords.add(newRecord);
-       // AppointmentDeets newDeets = new AppointmentDeets(this.name, selectedTime, selectedDoctor.getName());
-        //this.appointmentDeets.add(newDeets);
-        doctor = Admin.getDoctorByName(doctor.getName());
-        
-        if (doctor != null) {
-            // Book the appointment for the selected doctor
-            AppointmentDeets newDeets = new AppointmentDeets(this.getName(), selectedTime, doctor.getName());
-            doctor.addAppointmentDeets(newDeets);  // Add to the doctor's list of appointments
-            System.out.println("Appointment booked with Dr. " + doctor.getName() + " at " + selectedTime);
-        } else {
-            System.out.println("Doctor not found. Please check the name and try again.");
-        }
-        //doctor.addAppointment(newRecord);
-        // Inform the doctor and add the appointment
-        selectedDoctor.addAppointment(newRecord);
-        selectedDoctor.removeAvailableTime(selectedTime);  // Remove the booked time from availability
-
-    
-        System.out.println("Appointment booked with Dr. " + selectedDoctor.getName() + " in the " + selectedDepartment + " department on " + selectedTime);
-    }*/
-
     public void bookAppointment(Admin admin, Scanner scanner, Doctor doctor) {
         List<String> departments = admin.getDepartments();
-
-        // Display available departments
+    
         System.out.println("Available departments:");
         for (int i = 0; i < departments.size(); i++) {
             System.out.println((i + 1) + ". " + departments.get(i));
         }
     
-        // Prompt the patient to select a department
         System.out.print("Please select a department by entering the corresponding number: ");
         int departmentChoice = scanner.nextInt();
         scanner.nextLine(); 
@@ -263,7 +156,7 @@ public static void signIn(Scanner scanner, PatientDatabase patientDatabase, Admi
             System.out.println("Invalid choice. Please try again.");
             return;
         }
-        
+    
         String selectedDepartment = departments.get(departmentChoice - 1);
         
         // Get the list of available doctors in the selected department from the admin
@@ -271,8 +164,7 @@ public static void signIn(Scanner scanner, PatientDatabase patientDatabase, Admi
     
         // Filter doctors based on the selected department
         availableDoctors = getDoctorsByDepartment(availableDoctors, selectedDepartment);
-        
-        // Display available doctors
+    
         System.out.println("Available doctors in the " + selectedDepartment + " department:");
         if (availableDoctors.isEmpty()) {
             System.out.println("No doctors available in this department.");
@@ -282,7 +174,6 @@ public static void signIn(Scanner scanner, PatientDatabase patientDatabase, Admi
             System.out.println((i + 1) + ". " + availableDoctors.get(i).getName());
         }
     
-        // Prompt the patient to select a doctor
         System.out.print("Please select a doctor by entering the corresponding number: ");
         int doctorChoice = scanner.nextInt();
         scanner.nextLine(); 
@@ -297,19 +188,16 @@ public static void signIn(Scanner scanner, PatientDatabase patientDatabase, Admi
         // Get the available appointment times from the selected doctor
         List<String> availableTimes = selectedDoctor.getAvailableTimes();
         
-        // Check if there are available times
         if (availableTimes.isEmpty()) {
             System.out.println("Sorry, there are no available times for Dr. " + selectedDoctor.getName() + ".");
             return;
         }
         
-        // Display available times
         System.out.println("Available times for Dr. " + selectedDoctor.getName() + ":");
         for (int i = 0; i < availableTimes.size(); i++) {
             System.out.println((i + 1) + ". " + availableTimes.get(i));
         }
     
-        // Prompt the patient to select a time
         System.out.print("Please select a time by entering the corresponding number: ");
         int timeChoice = scanner.nextInt();
         scanner.nextLine(); 
@@ -318,7 +206,6 @@ public static void signIn(Scanner scanner, PatientDatabase patientDatabase, Admi
             System.out.println("Invalid choice. Please try again.");
             return;
         }
-
     
         // Get the selected time
         String selectedTime = availableTimes.get(timeChoice - 1);
@@ -326,19 +213,20 @@ public static void signIn(Scanner scanner, PatientDatabase patientDatabase, Admi
     
         // Create a new PatientHistory record for this appointment
         PatientHistory newRecord = new PatientHistory(this.name, selectedTime, selectedDepartment, selectedDoctor.getName(), "Pending");
+    
+        // Check if this patient history already exists
+        for (PatientHistory record : historyRecords) {
+            if (record.equals(newRecord)) {
+                System.out.println("This appointment has already been booked.");
+                return;  // Exit the method to avoid duplicate records
+            }
+        }
+    
+        // Add the new PatientHistory record if it doesn't already exist
         this.historyRecords.add(newRecord);
     
         // Inform the doctor and add the appointment
-        // Adding debug print statements
         selectedDoctor.addAppointment(newRecord, selectedTime, selectedDoctor.getName());
-        System.out.println("New appointment added to doctor: " + selectedDoctor.getName() +
-                        ", Patient: " + newRecord.getPatientName() + ", Time: " + selectedTime);
-        System.out.println("Total appointments for " + selectedDoctor.getName() + ": " + selectedDoctor.getAppointments().size());
-
-
-        //doctor.addAppointment(history, selectedTime);
-        //selectedDoctor.removeAvailableTime(selectedTime);  // Remove the booked time from availability
-    
         System.out.println("Appointment booked with Dr. " + selectedDoctor.getName() + " in the " + selectedDepartment + " department on " + selectedTime);
     }
     
@@ -354,115 +242,8 @@ public static void signIn(Scanner scanner, PatientDatabase patientDatabase, Admi
         return availableDoctors; 
     }
     
-
-/* 
-    public void bookAppointment(Admin admin) {
-        Scanner scanner = new Scanner(System.in);
-        
-        // Get the list of available departments from the admin
-        List<String> departments = admin.getDepartments();
-        
-        // Display available departments
-        System.out.println("Available departments:");
-        for (int i = 0; i < departments.size(); i++) {
-            System.out.println((i + 1) + ". " + departments.get(i));
-        }
-        
-        // Prompt the patient to select a department
-        System.out.print("Please select a department by entering the corresponding number: ");
-        int departmentChoice = scanner.nextInt();
-        scanner.nextLine(); // Consume newline
-        
-        if (departmentChoice < 1 || departmentChoice > departments.size()) {
-            System.out.println("Invalid choice. Please try again.");
-            return;
-        }
-        
-        String selectedDepartment = departments.get(departmentChoice - 1);
-        
-        // Get the list of available doctors in the selected department from the admin
-        List<Doctor> availableDoctors = admin.getDoctors(); // Or filter doctors based on department
-
-        // Filter doctors based on the selected department
-        availableDoctors = getDoctorsByDepartment(availableDoctors, selectedDepartment);
-        
-        // Display available doctors
-        System.out.println("Available doctors in the " + selectedDepartment + " department:");
-        if (availableDoctors.isEmpty()) {
-            System.out.println("No doctors available in this department.");
-            return;
-        }
-        for (int i = 0; i < availableDoctors.size(); i++) {
-            System.out.println((i + 1) + ". " + availableDoctors.get(i).getName());
-        }
-
-        // Prompt the patient to select a doctor
-        System.out.print("Please select a doctor by entering the corresponding number: ");
-        int doctorChoice = scanner.nextInt();
-        scanner.nextLine(); // Consume newline
-        
-        if (doctorChoice < 1 || doctorChoice > availableDoctors.size()) {
-            System.out.println("Invalid choice. Please try again.");
-            return;
-        }
-        
-        Doctor selectedDoctor = availableDoctors.get(doctorChoice - 1);
-        
-        // Get the available appointment times from the selected doctor
-        List<String> availableTimes = selectedDoctor.getAvailableTimes();
-        
-        // Check if there are available times
-        if (availableTimes.isEmpty()) {
-            System.out.println("Sorry, there are no available times for Dr. " + selectedDoctor.getName() + ".");
-            return;
-        }
-        
-        // Display available times
-        System.out.println("Available times for Dr. " + selectedDoctor.getName() + ":");
-        for (int i = 0; i < availableTimes.size(); i++) {
-            System.out.println((i + 1) + ". " + availableTimes.get(i));
-        }
-
-        // Prompt the patient to select a time
-        System.out.print("Please select a time by entering the corresponding number: ");
-        int timeChoice = scanner.nextInt();
-        scanner.nextLine(); // Consume newline
-        
-        // Validate the choice
-        if (timeChoice < 1 || timeChoice > availableTimes.size()) {
-            System.out.println("Invalid choice. Please try again.");
-            return;
-        }
-
-        // Get the selected time
-        String selectedTime = availableTimes.get(timeChoice - 1);
-
-        // Create a new PatientHistory record for this appointment
-        PatientHistory newRecord = new PatientHistory(this.name, selectedTime, selectedDepartment, selectedDoctor.getName(), ""); // Issue description can be added here if needed
-        this.historyRecords.add(newRecord);
-
-        // Inform the doctor and add the appointment
-        selectedDoctor.addAppointment(newRecord);
-        selectedDoctor.removeAvailableTime(selectedTime);  // Remove the booked time from availability
-
-        System.out.println("Appointment booked with Dr. " + selectedDoctor.getName() + " in the " + selectedDepartment + " department on " + selectedTime);
-    }
-
-    // Method to get available doctors by department
-    private List<Doctor> getDoctorsByDepartment(List<Doctor> doctors, String department) {
-        List<Doctor> availableDoctors = new ArrayList<>();
-        for (Doctor doctor : doctors) {
-            if (doctor.getDepartment().equalsIgnoreCase(department) && !doctor.getAvailableTimes().isEmpty()) {
-                availableDoctors.add(doctor);
-            }
-        }
-        scanner.close();
-        return availableDoctors;
-    }
-*/
-
-    // Optional method to display patient information (for testing lang)
     public void displayPatientInfo() {
+        System.out.println("Patient Information");
         System.out.println("Name: " + name);
         System.out.println("Email: " + email);
         System.out.println("Contact Number: " + contactNo);
@@ -475,126 +256,23 @@ public static void signIn(Scanner scanner, PatientDatabase patientDatabase, Admi
         System.out.println("Blood Type: " + bloodtype);
     }
     
-
-    /*public void bookAppointment(Doctor doctor, String department, String issueDescription) {
-        Scanner scanner = new Scanner(System.in);
-        
-        // Get the available times from the doctor
-        List<String> availableTimes = doctor.getAvailableTimes();
-
-        // Check if there are available times
-        if (availableTimes.isEmpty()) {
-            System.out.println("Sorry, there are no available times for Dr. " + doctor.getName() + ".");
-            return;
-        }
-
-        // Display available times
-        System.out.println("Available times for Dr. " + doctor.getName() + " in the " + department + " department:");
-        for (int i = 0; i < availableTimes.size(); i++) {
-            System.out.println((i + 1) + ". " + availableTimes.get(i));
-        }
-
-        // Prompt the patient to select a time
-        System.out.print("Please select a time by entering the corresponding number: ");
-        int choice = scanner.nextInt();
-        scanner.nextLine();  // Consume newline
-        scanner.close();
-        // Validate the choice
-        if (choice < 1 || choice > availableTimes.size()) {
-            System.out.println("Invalid choice. Please try again.");
-            return;
-        }
-
-        // Get the selected time
-        String selectedTime = availableTimes.get(choice - 1);
-
-        // Create a new PatientHistory record for this appointment
-        PatientHistory newRecord = new PatientHistory(this.name, selectedTime, department, doctor.getName(), issueDescription);
-        historyRecords.add(newRecord);
-        
-        // Inform the doctor and add the appointment
-        doctor.addAppointment(newRecord);
-        doctor.removeAvailableTime(selectedTime);  // Remove the booked time from availability
-
-        System.out.println("Appointment booked with Dr. " + doctor.getName() + " in the " + department + " department on " + selectedTime);
-        
-    }
-
-    public void chooseDepartmentAndShowDoctors(List<Doctor> doctors) {
-        Scanner scanner = new Scanner(System.in);
-        
-        // Create a list of departments and their corresponding doctors
-        List<String> departments = new ArrayList<>();
-        for (Doctor doc : doctors) {
-            if (!departments.contains(doc.getDepartment())) {
-                departments.add(doc.getDepartment());
-            }
-        }
-
-        // Display available departments
-        System.out.println("Available Departments:");
-        for (int i = 0; i < departments.size(); i++) {
-            System.out.println((i + 1) + ". " + departments.get(i));
-        }
-
-        // Prompt the patient to select a department
-        System.out.print("Please select a department by entering the corresponding number: ");
-        int choice = scanner.nextInt();
-        scanner.nextLine();  // Consume newline
-
-        // Validate the choice
-        if (choice < 1 || choice > departments.size()) {
-            System.out.println("Invalid choice. Please try again.");
-            return;
-        }
-
-        // Get the selected department
-        String selectedDepartment = departments.get(choice - 1);
-        
-        // Show available doctors in the selected department
-        System.out.println("Available doctors in " + selectedDepartment + ":");
-        boolean found = false;
-        for (Doctor doc : doctors) {
-            if (doc.getDepartment().equals(selectedDepartment)) {
-                System.out.println(" - " + doc.getName());
-                found = true;
-            }
-        }
-        if (!found) {
-            System.out.println("No available doctors in this department.");
-        }
-        scanner.close();
-    }
-*/
-    /*public List<PatientHistory> getHistoryRecords() {
-        return historyRecords; // Return the list of patient history records
-    }*/
-
     public void viewMedicalHistory() {
-        /*if (historyRecords.isEmpty()) {
-            System.out.println("You have no medical history records.");
-            return;
-        }*/
         if (historyRecords != null && !historyRecords.isEmpty()) {
             System.out.println("Your Medical History:");
-        for (PatientHistory record : historyRecords) {
-            System.out.println("Patient Name: " + record.getPatientName());
-            System.out.println("Visit Date: " + record.getVisitDate());
-            System.out.println("Department: " + record.getDepartment());
-            System.out.println("Doctor: " + record.getDoctorName());
-            System.out.println("Diagnosis: " + record.getDiagnosis());
-            System.out.println("----------------------------------");
-        }
+            for (PatientHistory record : historyRecords) {
+                System.out.println(record.toString());  // Alternatively, just System.out.println(record);
+            }
         } else {
             System.out.println("No medical history records found.");
         }
     }
     
+    
     public static void patientMenu(Scanner scanner, PatientDatabase patientDatabase, Admin admin, Doctor doctor) {
         System.out.println("1. Signup");
         System.out.println("2. Sign in");
         System.out.println("3. Exit");
-        System.out.print("Enter the corresponding number of your choice: ");
+        System.out.print("Please select an option by entering the corresponding number:");
         int choice = scanner.nextInt();
         scanner.nextLine(); 
     
@@ -613,15 +291,13 @@ public static void signIn(Scanner scanner, PatientDatabase patientDatabase, Admi
                 break;
             case 3:
                 System.out.println("Exiting...");
-                return; // Exit the method
+                return;
             default:
                 System.out.println("Invalid option. Please try again.");
-        }
-        
+        } 
     }
+}
     
-    
-    }
     
 
 

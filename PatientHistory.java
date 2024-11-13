@@ -35,7 +35,7 @@ public class PatientHistory {
     }
 
     public String getVisitDate() {
-        return visitDate; // Return the date as LocalDate
+        return visitDate;
     }
 
     public String getDepartment() {
@@ -63,14 +63,15 @@ public class PatientHistory {
     // Override toString method for easy display of the patient's history record
     @Override
     public String toString() {
-        return "Patient History Record: " +
-                "Patient Name: " + patientName +
-                ", Visit Date: " + visitDate +
-                ", Department: " + department +
-                ", Doctor: " + doctorName +
-                ", Diagnosis: " + diagnosis;
+        return "Patient History Record:\n" +
+           "Patient Name: " + patientName + "\n" +
+           "Visit Date: " + visitDate + "\n" +
+           "Department: " + department + "\n" +
+           "Doctor: " + doctorName + "\n" +
+           "Diagnosis: " + diagnosis;
     }
     
+    //Used in booking appointment to avoid duplication
     @Override
     public boolean equals(Object obj) {
         if (this == obj) return true;
@@ -82,10 +83,4 @@ public class PatientHistory {
                doctorName.equals(other.doctorName) &&
                diagnosis.equals(other.diagnosis);
     }
-
-    /*@Override
-    public int hashCode() {
-        return Objects.hash(patientName, visitDate, department, doctorName, diagnosis);
-    }
-        */
 }

@@ -6,7 +6,7 @@ public class Main {
             Admin admin = new Admin();
             Doctor doctor = new Doctor(null, null);
             admin.initDepartments();
-            PatientDatabase patientDatabase = new PatientDatabase(); // Create an instance of PatientDatabase
+            PatientDatabase patientDatabase = new PatientDatabase(); 
     
             int choice;
             do {
@@ -43,4 +43,4 @@ public class Main {
         scanner.close();
     }
 }
-     //
+     
