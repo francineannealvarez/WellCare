@@ -1,4 +1,5 @@
 import java.util.ArrayList;
+import java.util.InputMismatchException;
 import java.util.List;
 import java.util.Scanner;
 
@@ -8,16 +9,20 @@ public class Patient extends User {
     private String contactNo;
     private String email;
     private String emergencyNo;
-    private String gender;
+    private Gender gender;
     private String allergy;
     private String past; // past surgeries or treatments
     private String bloodtype;
     private List<PatientHistory> historyRecords = new ArrayList<>();
+    private List<PatientHistory> appointments;
     
     private Admin admin; 
 
+    enum Gender {
+        Female, Male
+    }
     public Patient(String name, String password, String address, String bday, String contactNo, String email,
-                   String emergencyNo, String gender, String allergy, String past, String bloodtype, Admin admin) {
+                   String emergencyNo, Gender gender, String allergy, String past, String bloodtype, Admin admin) {
         super(name, password);  
         this.address = address;
         this.bday = bday;
@@ -30,17 +35,36 @@ public class Patient extends User {
         this.bloodtype = bloodtype;
         this.historyRecords = new ArrayList<>();
         this.admin = admin;
+        this.appointments = new ArrayList<>();
     }
     
     public Admin getAdmin(){
         return admin;
     }
 
+    public String getName() {
+        return name;
+    }
+
     public Patient(String name, String password) {
         super(name, password);  
     }
 
+    public Gender getGender() {
+        return gender;
+    }
+
+    public void setGender(Gender gender) {
+        this.gender = gender;
+    }
+
+    public List<PatientHistory> getAppointments() {
+        System.out.println("Appointments list: " + appointments); 
+        return appointments;
+    }
+
     public boolean signup(Scanner scanner, PatientDatabase patientDatabase) {
+        System.out.println("Please fill in the following details to sign up. Note: Some fields are case-sensitive.");
         System.out.print("Enter your name: ");
         this.name = scanner.nextLine();
 
@@ -62,23 +86,31 @@ public class Patient extends User {
         System.out.print("Enter your emergency contact number: ");
         this.emergencyNo = scanner.nextLine();
 
-        System.out.print("Enter your gender: ");
-        this.gender = scanner.nextLine();
+        System.out.print("Enter your gender (Female/Male): ");
+        String genderInput = scanner.nextLine().trim();
+        if (genderInput.equalsIgnoreCase("Female")) {
+            this.gender = Gender.Female;
+        } else if (genderInput.equalsIgnoreCase("Male")) {
+            this.gender = Gender.Male;
+        } else {
+            System.out.println("Invalid gender. Please enter 'Female' or 'Male'.");
+            return false;
+        }
 
-        System.out.print("Enter any allergies: ");
+        System.out.print("Enter any allergies (N/A if none): ");
         this.allergy = scanner.nextLine();
 
-        System.out.print("Enter past surgeries or treatments: ");
+        System.out.print("Enter past surgeries or treatments(N/A if none): ");
         this.past = scanner.nextLine();
 
         System.out.print("Enter your blood type: ");
         this.bloodtype = scanner.nextLine();
 
         if (name.isEmpty() || password.isEmpty() || contactNo.isEmpty() || email.isEmpty() ||
-            address.isEmpty() || bday.isEmpty() || emergencyNo.isEmpty() || gender.isEmpty() ||
-            allergy.isEmpty() || bloodtype.isEmpty() || past.isEmpty()) {
-            System.out.println("Required fields are missing.");
-            return false;
+        address.isEmpty() || bday.isEmpty() || emergencyNo.isEmpty() || allergy.isEmpty() ||
+        bloodtype.isEmpty() || past.isEmpty()) {
+        System.out.println("Required fields are missing.");
+        return false;
         }
 
         // Add the patient to the database
@@ -107,7 +139,6 @@ public class Patient extends User {
     }
 
     public void showUserOptions(Scanner scanner, Admin admin, Doctor doctor) {
-       int choice;
        boolean exit = false;
 
         while (!exit){
@@ -115,11 +146,14 @@ public class Patient extends User {
             System.out.println("1. Book an appointment");
             System.out.println("2. View medical history");
             System.out.println("3. Entered Patient Info");
-            System.out.println("4. Log out");
+            System.out.println("4. View Scheduled Appointment");
+            System.out.println("5. Log out");
             System.out.print("Choose an option: ");
-            choice = scanner.nextInt();
+           
+        try{
+            int choice = scanner.nextInt();
             scanner.nextLine();
-            
+
             switch (choice) {
                 case 1:
                     bookAppointment(admin, scanner, doctor);
@@ -130,18 +164,28 @@ public class Patient extends User {
                 case 3:
                     displayPatientInfo();
                     break;
-                case 4:
+                case 4: 
+                    viewPatientAppointments();
+                    break;
+                case 5:
                     exit = true;
                     System.out.println("Logging out...");
                     break;
                 default:
                     System.out.println("Invalid option. Please try again.");
             }
-        } 
+        } catch (InputMismatchException e) {
+                System.out.println("Invalid input. Please enter a number.");
+                scanner.nextLine(); // Clear the invalid input from the scanner
+        }
     }
+}
 
     public void bookAppointment(Admin admin, Scanner scanner, Doctor doctor) {
         List<String> departments = admin.getDepartments();
+        if (appointments == null) {
+            appointments = new ArrayList<>();  // Initialize the appointments list
+        }
     
         System.out.println("Available departments:");
         for (int i = 0; i < departments.size(); i++) {
@@ -206,30 +250,30 @@ public class Patient extends User {
             System.out.println("Invalid choice. Please try again.");
             return;
         }
-    
-        // Get the selected time
+
         String selectedTime = availableTimes.get(timeChoice - 1);
         selectedDoctor.removeAvailableTime(selectedTime);
+
+        System.out.print("Please describe your medical condition or reason for the visit: ");
+        String medicalCondition = scanner.nextLine();
+
+        PatientHistory newRecord = new PatientHistory(this.name, selectedTime, selectedDepartment, selectedDoctor.getName(), medicalCondition, "Pending");
     
-        // Create a new PatientHistory record for this appointment
-        PatientHistory newRecord = new PatientHistory(this.name, selectedTime, selectedDepartment, selectedDoctor.getName(), "Pending");
-    
-        // Check if this patient history already exists
         for (PatientHistory record : historyRecords) {
             if (record.equals(newRecord)) {
                 System.out.println("This appointment has already been booked.");
-                return;  // Exit the method to avoid duplicate records
+                return; 
             }
         }
     
-        // Add the new PatientHistory record if it doesn't already exist
         this.historyRecords.add(newRecord);
+        this.appointments.add(newRecord);
     
-        // Inform the doctor and add the appointment
         selectedDoctor.addAppointment(newRecord, selectedTime, selectedDoctor.getName());
         System.out.println("Appointment booked with Dr. " + selectedDoctor.getName() + " in the " + selectedDepartment + " department on " + selectedTime);
     }
     
+
     
     // Method to get available doctors by department
     public List<Doctor> getDoctorsByDepartment(List<Doctor> doctors, String department) {
@@ -267,37 +311,60 @@ public class Patient extends User {
         }
     }
     
-    
     public static void patientMenu(Scanner scanner, PatientDatabase patientDatabase, Admin admin, Doctor doctor) {
-        System.out.println("1. Signup");
-        System.out.println("2. Sign in");
-        System.out.println("3. Exit");
-        System.out.print("Please select an option by entering the corresponding number:");
-        int choice = scanner.nextInt();
-        scanner.nextLine(); 
+        boolean exit = false;
     
-        switch (choice) {
-            case 1:
-                Patient newPatient = new Patient("", ""); // Create a new Patient with empty name and password
-                boolean success = newPatient.signup(scanner, patientDatabase);
-                if (success) {
-                    System.out.println("Patient signed up successfully.");
-                } else {
-                    System.out.println("Signup failed. Please try again.");
+        while (!exit) {
+            System.out.println("\nPatient Menu");
+            System.out.println("1. Signup");
+            System.out.println("2. Sign in");
+            System.out.println("3. Exit");
+            System.out.print("Please select an option by entering the corresponding number: ");
+            
+            try {
+                int choice = scanner.nextInt();
+                scanner.nextLine(); 
+    
+                switch (choice) {
+                    case 1:
+                        Patient newPatient = new Patient("", ""); // Create a new Patient with empty name and password
+                        boolean success = newPatient.signup(scanner, patientDatabase);
+                        if (success) {
+                            System.out.println("Patient signed up successfully.");
+                        } else {
+                            System.out.println("Signup failed. Please try again.");
+                        }
+                        break;
+                    case 2:
+                        Patient.signIn(scanner, patientDatabase, admin, doctor);
+                        break;
+                    case 3:
+                        System.out.println("Exiting...");
+                        exit = true;
+                        break; 
+                    default:
+                        System.out.println("Invalid option. Please try again.");
                 }
-                break;
-            case 2:
-                Patient.signIn(scanner, patientDatabase, admin, doctor);
-                break;
-            case 3:
-                System.out.println("Exiting...");
-                return;
-            default:
-                System.out.println("Invalid option. Please try again.");
-        } 
+            } catch (InputMismatchException e) {
+                System.out.println("Invalid input. Please enter a valid number.");
+                scanner.nextLine(); 
+            }
+        }
     }
-}
     
+        public void viewPatientAppointments() {
+        if (getAppointments() == null || getAppointments().isEmpty()) {
+            System.out.println("You have no scheduled appointments.");
+        } else {
+            System.out.println("Scheduled appointments for " + getName() + ":");
+            for (PatientHistory appointment : getAppointments()) {
+                System.out.println(appointment);  // Will display cancellation status as well
+            }
+        }
+    }
+
+    
+}
     
 
 

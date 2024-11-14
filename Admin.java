@@ -1,4 +1,5 @@
 import java.util.ArrayList;
+import java.util.InputMismatchException;
 import java.util.List;
 import java.util.Scanner;
 
@@ -65,12 +66,9 @@ public class Admin {
         }
     }
 
-    public Doctor getDoctorByName(String name) {
-        System.out.println("Searching for doctor: " + name);
+    public Doctor getDoctorByName(String name){
         for (Doctor doctor : doctors) {
-           // System.out.println("Checking doctor: " + doctor.getName());
             if (doctor.getName().equalsIgnoreCase(name)) {
-                System.out.println("Found doctor: Dr. " + doctor.getName());
                 return doctor;
             }
         }
@@ -112,7 +110,7 @@ public class Admin {
     }    
 
     public void adminMenu(Scanner scanner) {
-        boolean exit = false;
+    boolean exit = false;
 
         while (!exit) {
             System.out.println("\nAdmin Menu:");
@@ -123,36 +121,43 @@ public class Admin {
             System.out.println("5. View Departments");
             System.out.println("6. Exit");
             System.out.print("Please select an option by entering the corresponding number: ");
-            int choice = scanner.nextInt();
-            scanner.nextLine();
+            
+            try {
+                int choice = scanner.nextInt();
+                scanner.nextLine(); 
 
-            switch (choice) {
-                case 1:
-                    addDepartment(scanner);
-                    break;
-                case 2:
-                    System.out.print("Enter doctor's name: ");
-                    String doctorName = scanner.nextLine();
-                    System.out.print("Enter department for the doctor (Note: this is case sensitive): ");
-                    String departmentName = scanner.nextLine();
-                    addDoctor(doctorName, departmentName);
-                    break;
-                case 3:
-                    System.out.print("Enter doctor's name to remove: ");
-                    String nameToRemove = scanner.nextLine();
-                    removeDoctor(nameToRemove);
-                    break;
-                case 4:
-                    viewDoctors();
-                    break;
-                case 5:
-                    showDepartments();
-                    break;
-                case 6:
-                    exit = true;
-                    break;
-                default:
-                    System.out.println("Invalid option. Please try again.");
+                switch (choice) {
+                    case 1:
+                        addDepartment(scanner);
+                        break;
+                    case 2:
+                        System.out.print("Enter doctor's name: ");
+                        String doctorName = scanner.nextLine();
+                        System.out.print("Enter department for the doctor (Note: this is case sensitive): ");
+                        String departmentName = scanner.nextLine();
+                        addDoctor(doctorName, departmentName);
+                        break;
+                    case 3:
+                        System.out.print("Enter doctor's name to remove: ");
+                        String nameToRemove = scanner.nextLine();
+                        removeDoctor(nameToRemove);
+                        break;
+                    case 4:
+                        viewDoctors();
+                        break;
+                    case 5:
+                        showDepartments();
+                        break;
+                    case 6:
+                        System.out.println("Exiting...");
+                        exit = true;
+                        break;
+                    default:
+                        System.out.println("Invalid option. Please try again.");
+                }
+            } catch (InputMismatchException e) {
+                System.out.println("Invalid input. Please enter a valid number.");
+                scanner.nextLine(); 
             }
         }
     }

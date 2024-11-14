@@ -5,9 +5,11 @@ public class PatientHistory {
     private String visitDate; 
     private String department;
     private String doctorName;
+    private String medicalCondition;
     private String diagnosis;
+    private boolean isCancelled;
 
-    public PatientHistory(String patientName, String visitDate, String department, String doctorName, String diagnosis) {
+    public PatientHistory(String patientName, String visitDate, String department, String doctorName, String medicalCondition, String diagnosis) {
         if (patientName == null || patientName.trim().isEmpty()) {
             throw new IllegalArgumentException("Patient name cannot be null or empty");
         }
@@ -23,11 +25,16 @@ public class PatientHistory {
         if (diagnosis == null || diagnosis.isEmpty()) {
             diagnosis = "Pending";  // Set diagnosis to "Pending" if not provided
         }
+        if (medicalCondition == null || medicalCondition.trim().isEmpty()) {
+            throw new IllegalArgumentException("Doctor name cannot be null or empty");
+        }
         this.patientName = patientName;
         this.visitDate = visitDate; 
         this.department = department;
         this.doctorName = doctorName;
+        this.medicalCondition = medicalCondition;
         this.diagnosis = diagnosis;
+        this.isCancelled = false; 
     }
 
     public String getPatientName() {
@@ -50,6 +57,10 @@ public class PatientHistory {
         return diagnosis;
     }
 
+    public String getMedicalCondition() {
+        return medicalCondition;
+    }
+
     public void setDiagnosis(String diagnosis) {
         if (diagnosis != null && !diagnosis.isEmpty()) {
             this.diagnosis = diagnosis;
@@ -58,17 +69,28 @@ public class PatientHistory {
         }
     }
 
+    public boolean isCancelled() {
+        return isCancelled;
+    }
+
+    public void setCancelled(boolean isCancelled) {
+        this.isCancelled = isCancelled;
+    }
+    
+
   
 
     // Override toString method for easy display of the patient's history record
     @Override
     public String toString() {
-        return "Patient History Record:\n" +
+        return "\nPatient History Record:\n" +
            "Patient Name: " + patientName + "\n" +
            "Visit Date: " + visitDate + "\n" +
            "Department: " + department + "\n" +
            "Doctor: " + doctorName + "\n" +
-           "Diagnosis: " + diagnosis;
+           "Medical Condition: " + medicalCondition + "\n" +
+           "Diagnosis: " + diagnosis + "\n" +
+           "Status: " + (isCancelled ? "Cancelled" : "Scheduled");
     }
     
     //Used in booking appointment to avoid duplication
@@ -81,6 +103,7 @@ public class PatientHistory {
                visitDate.equals(other.visitDate) &&
                department.equals(other.department) &&
                doctorName.equals(other.doctorName) &&
+               medicalCondition.equals(other.medicalCondition) &&
                diagnosis.equals(other.diagnosis);
     }
 }
