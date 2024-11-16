@@ -8,7 +8,6 @@ public class PatientDatabase {
         patients = new ArrayList<>();
     }
 
-    // Add a new patient to the database
     public void addPatient(Patient patient) {
         patients.add(patient);
     }
@@ -21,6 +20,15 @@ public class PatientDatabase {
             }
         }
         return null;
+    }
+
+    public Patient findByName(String name) {
+        for (Patient patient : patients) {
+            if (patient.getName().equalsIgnoreCase(name)) {
+                return patient;
+            }
+        }
+        return null;// will return null if no match is found
     }
 }
 

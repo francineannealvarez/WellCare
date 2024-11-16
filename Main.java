@@ -8,8 +8,8 @@ public class Main {
         Doctor doctor = new Doctor(null, null);
         admin.initDepartments();
         PatientDatabase patientDatabase = new PatientDatabase(); 
+        
 
-        int choice;
         boolean exit = false;
 
         while (!exit) {
@@ -21,7 +21,7 @@ public class Main {
             System.out.print("Choose an option: ");
             
             try {
-                choice = scanner.nextInt();
+                int choice = scanner.nextInt();
                 scanner.nextLine(); 
 
                 switch (choice) {
@@ -29,7 +29,7 @@ public class Main {
                         Patient.patientMenu(scanner, patientDatabase, admin, doctor); 
                         break;
                     case 2:
-                        Doctor.DoctorMenu(scanner, admin);
+                        Doctor.DoctorMenu(scanner, admin, patientDatabase);
                         break;
                     case 3:
                         if (Admin.signIn(scanner)) {

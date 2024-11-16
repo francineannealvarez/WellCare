@@ -1,6 +1,7 @@
 
 
 public class PatientHistory {
+    private Patient patient;
     private String patientName;
     private String visitDate; 
     private String department;
@@ -8,10 +9,11 @@ public class PatientHistory {
     private String medicalCondition;
     private String diagnosis;
     private boolean isCancelled;
+    private String cancellationReason;
 
-    public PatientHistory(String patientName, String visitDate, String department, String doctorName, String medicalCondition, String diagnosis) {
-        if (patientName == null || patientName.trim().isEmpty()) {
-            throw new IllegalArgumentException("Patient name cannot be null or empty");
+    public PatientHistory(Patient patient, String visitDate, String department, String doctorName, String medicalCondition, String diagnosis) {
+        if (patient == null) {
+            throw new IllegalArgumentException("Patient cannot be null");
         }
         if (visitDate == null) {
             throw new IllegalArgumentException("Visit date cannot be null");
@@ -22,23 +24,24 @@ public class PatientHistory {
         if (doctorName == null || doctorName.trim().isEmpty()) {
             throw new IllegalArgumentException("Doctor name cannot be null or empty");
         }
-        if (diagnosis == null || diagnosis.isEmpty()) {
-            diagnosis = "Pending";  // Set diagnosis to "Pending" if not provided
-        }
         if (medicalCondition == null || medicalCondition.trim().isEmpty()) {
-            throw new IllegalArgumentException("Doctor name cannot be null or empty");
+            throw new IllegalArgumentException("Medical condition cannot be null or empty");
         }
-        this.patientName = patientName;
-        this.visitDate = visitDate; 
+    
+        this.patient = patient;
+        this.patientName = patient.getName();  // Set the patient's name from the Patient object
+        this.visitDate = visitDate;
         this.department = department;
         this.doctorName = doctorName;
         this.medicalCondition = medicalCondition;
-        this.diagnosis = diagnosis;
-        this.isCancelled = false; 
+        this.diagnosis = (diagnosis != null && !diagnosis.isEmpty()) ? diagnosis : "Pending";
+        this.isCancelled = false;
+        this.cancellationReason = "";
     }
+    
 
-    public String getPatientName() {
-        return patientName;
+    public Patient getPatient() {
+        return patient;
     }
 
     public String getVisitDate() {
@@ -61,12 +64,19 @@ public class PatientHistory {
         return medicalCondition;
     }
 
+    
     public void setDiagnosis(String diagnosis) {
         if (diagnosis != null && !diagnosis.isEmpty()) {
             this.diagnosis = diagnosis;
+            this.setCancelled(true);  // Mark appointment as "Completed" or similar status
         } else {
             System.out.println("Diagnosis cannot be empty.");
         }
+    }
+        
+
+    public boolean hasDiagnosis() {
+        return !diagnosis.equals("Pending");
     }
 
     public boolean isCancelled() {
@@ -76,22 +86,40 @@ public class PatientHistory {
     public void setCancelled(boolean isCancelled) {
         this.isCancelled = isCancelled;
     }
+
+    public String getCancellationReason() {
+        return cancellationReason;
+    }
+
+    public void setCancellationReason(String cancellationReason) {
+        this.cancellationReason = cancellationReason;
+    }
+
+    public void addDiagnosis(String diagnosis) {
+        this.diagnosis = diagnosis;
+    }
     
-
-  
-
-    // Override toString method for easy display of the patient's history record
     @Override
     public String toString() {
-        return "\nPatient History Record:\n" +
-           "Patient Name: " + patientName + "\n" +
-           "Visit Date: " + visitDate + "\n" +
-           "Department: " + department + "\n" +
-           "Doctor: " + doctorName + "\n" +
-           "Medical Condition: " + medicalCondition + "\n" +
-           "Diagnosis: " + diagnosis + "\n" +
-           "Status: " + (isCancelled ? "Cancelled" : "Scheduled");
+        return "Patient Name: " + patientName + "\n" +
+               "Visit Date: " + visitDate + "\n" +
+               "Department: " + department + "\n" +
+               "Doctor: " + doctorName + "\n" +
+               "Medical Condition: " + medicalCondition + "\n" +
+               "Diagnosis: " + diagnosis;
     }
+
+
+    public String toStringForAppointment(boolean includeStatus) {
+        return "Patient Name: " + patientName + "\n" +
+               "Visit Date: " + visitDate + "\n" +
+               "Department: " + department + "\n" +
+               "Doctor: " + doctorName + "\n" +
+               "Medical Condition: " + medicalCondition + "\n" +
+               "Diagnosis: " + (hasDiagnosis() ? diagnosis : "Pending") + "\n" +
+               (includeStatus ? "Status: " + (hasDiagnosis() ? "Scheduled" : "Pending") + "\n" : "");
+    }
+    
     
     //Used in booking appointment to avoid duplication
     @Override

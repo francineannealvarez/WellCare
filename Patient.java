@@ -15,6 +15,7 @@ public class Patient extends User {
     private String bloodtype;
     private List<PatientHistory> historyRecords = new ArrayList<>();
     private List<PatientHistory> appointments;
+    private List<PatientHistory> cancelledAppointments;
     
     private Admin admin; 
 
@@ -36,20 +37,34 @@ public class Patient extends User {
         this.historyRecords = new ArrayList<>();
         this.admin = admin;
         this.appointments = new ArrayList<>();
-    }
-    
-    public Admin getAdmin(){
-        return admin;
-    }
-
-    public String getName() {
-        return name;
+        this.cancelledAppointments = new ArrayList<>();
     }
 
     public Patient(String name, String password) {
         super(name, password);  
     }
 
+    public String getName() {
+        return super.getName();  
+    }
+
+    @Override
+    public String toString() {
+        return getName();  
+    } 
+    
+    public Admin getAdmin(){
+        return admin;
+    }
+    
+    public void addAppointment(PatientHistory appointment) {
+        this.appointments.add(appointment);  
+    }
+
+    public void removeAppointment(PatientHistory appointment) {
+        this.appointments.remove(appointment);  
+    }
+    
     public Gender getGender() {
         return gender;
     }
@@ -59,9 +74,31 @@ public class Patient extends User {
     }
 
     public List<PatientHistory> getAppointments() {
-        System.out.println("Appointments list: " + appointments); 
         return appointments;
     }
+
+    public List<PatientHistory> getHistoryRecords() {
+        return historyRecords;
+    }
+    
+    public List<PatientHistory> getCancelledAppointments() {
+        if (cancelledAppointments == null) {
+            cancelledAppointments = new ArrayList<>(); 
+        }
+        return cancelledAppointments;
+    }
+
+    public void addCancelledAppointment(PatientHistory history) {
+        if (cancelledAppointments == null) {
+            cancelledAppointments = new ArrayList<>(); 
+        }
+        if (history != null) {
+            cancelledAppointments.add(history); 
+        } else {
+            System.out.println("Cannot add a null appointment.");
+        }
+    }
+    
 
     public boolean signup(Scanner scanner, PatientDatabase patientDatabase) {
         System.out.println("Please fill in the following details to sign up. Note: Some fields are case-sensitive.");
@@ -113,9 +150,7 @@ public class Patient extends User {
         return false;
         }
 
-        // Add the patient to the database
         patientDatabase.addPatient(this);
-        System.out.println("Sign-up completed successfully!\n");
         return true;
     }
 
@@ -147,7 +182,8 @@ public class Patient extends User {
             System.out.println("2. View medical history");
             System.out.println("3. Entered Patient Info");
             System.out.println("4. View Scheduled Appointment");
-            System.out.println("5. Log out");
+            System.out.println("5. View Cancelled Appointment");
+            System.out.println("6. Log out");
             System.out.print("Choose an option: ");
            
         try{
@@ -168,6 +204,9 @@ public class Patient extends User {
                     viewPatientAppointments();
                     break;
                 case 5:
+                    viewCancelledAppointments();
+                    break;
+                case 6:
                     exit = true;
                     System.out.println("Logging out...");
                     break;
@@ -184,7 +223,7 @@ public class Patient extends User {
     public void bookAppointment(Admin admin, Scanner scanner, Doctor doctor) {
         List<String> departments = admin.getDepartments();
         if (appointments == null) {
-            appointments = new ArrayList<>();  // Initialize the appointments list
+            appointments = new ArrayList<>(); 
         }
     
         System.out.println("Available departments:");
@@ -257,8 +296,16 @@ public class Patient extends User {
         System.out.print("Please describe your medical condition or reason for the visit: ");
         String medicalCondition = scanner.nextLine();
 
-        PatientHistory newRecord = new PatientHistory(this.name, selectedTime, selectedDepartment, selectedDoctor.getName(), medicalCondition, "Pending");
-    
+        //PatientHistory newRecord = new PatientHistory(this.name, selectedTime, selectedDepartment, selectedDoctor.getName(), medicalCondition, "Pending");
+        PatientHistory newRecord = new PatientHistory(
+            this,  // Pass the current Patient object (refers to the current Patient)
+            selectedTime,  
+            selectedDepartment,  
+            selectedDoctor.getName(),  
+            medicalCondition,  
+            "Pending"  
+        ); 
+
         for (PatientHistory record : historyRecords) {
             if (record.equals(newRecord)) {
                 System.out.println("This appointment has already been booked.");
@@ -266,16 +313,13 @@ public class Patient extends User {
             }
         }
     
-        this.historyRecords.add(newRecord);
+        //this.historyRecords.add(newRecord);
         this.appointments.add(newRecord);
     
         selectedDoctor.addAppointment(newRecord, selectedTime, selectedDoctor.getName());
         System.out.println("Appointment booked with Dr. " + selectedDoctor.getName() + " in the " + selectedDepartment + " department on " + selectedTime);
     }
     
-
-    
-    // Method to get available doctors by department
     public List<Doctor> getDoctorsByDepartment(List<Doctor> doctors, String department) {
         List<Doctor> availableDoctors = new ArrayList<>();
         for (Doctor doctor : doctors) {
@@ -285,6 +329,18 @@ public class Patient extends User {
         }
         return availableDoctors; 
     }
+
+    public void viewMedicalHistory() {
+        if (historyRecords != null && !historyRecords.isEmpty()) {
+            System.out.println("Your Medical History:");
+            for (PatientHistory record : historyRecords) {
+                System.out.println(record.toString());   // Alternatively, just System.out.println(record);
+            }
+        } else {
+            System.out.println("No medical history records found.");
+        }
+    }
+    
     
     public void displayPatientInfo() {
         System.out.println("Patient Information");
@@ -300,17 +356,38 @@ public class Patient extends User {
         System.out.println("Blood Type: " + bloodtype);
     }
     
-    public void viewMedicalHistory() {
-        if (historyRecords != null && !historyRecords.isEmpty()) {
-            System.out.println("Your Medical History:");
-            for (PatientHistory record : historyRecords) {
-                System.out.println(record.toString());  // Alternatively, just System.out.println(record);
+    
+    public void viewPatientAppointments() {
+        List<PatientHistory> appointments = getAppointments(); // Retrieve the patient's appointments
+    
+        if (appointments == null || appointments.isEmpty()) {
+            System.out.println("You have no scheduled appointments.");
+            return;
+        }
+        
+        System.out.println("Scheduled appointments for " + getName() + ":");
+        for (PatientHistory appointment : appointments) {
+            if (!appointment.isCancelled()) { // Skip canceled appointments
+                System.out.println("-------------------------------------------------");
+                System.out.println(appointment.toStringForAppointment(true));
+                System.out.println("-------------------------------------------------");
             }
-        } else {
-            System.out.println("No medical history records found.");
         }
     }
     
+    public void viewCancelledAppointments() {
+        if (cancelledAppointments == null || cancelledAppointments.isEmpty()) {
+            System.out.println("No cancelled appointments.");
+            return;
+        }
+    
+        System.out.println("Cancelled Appointments:");
+        for (PatientHistory history : cancelledAppointments) {
+            System.out.println("Date: " + history.getVisitDate() +
+                               ", Reason: " + history.getCancellationReason());
+        }
+    }
+
     public static void patientMenu(Scanner scanner, PatientDatabase patientDatabase, Admin admin, Doctor doctor) {
         boolean exit = false;
     
@@ -351,19 +428,6 @@ public class Patient extends User {
             }
         }
     }
-    
-        public void viewPatientAppointments() {
-        if (getAppointments() == null || getAppointments().isEmpty()) {
-            System.out.println("You have no scheduled appointments.");
-        } else {
-            System.out.println("Scheduled appointments for " + getName() + ":");
-            for (PatientHistory appointment : getAppointments()) {
-                System.out.println(appointment);  // Will display cancellation status as well
-            }
-        }
-    }
-
-    
 }
     
 

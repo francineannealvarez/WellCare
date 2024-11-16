@@ -4,6 +4,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.InputMismatchException;
 import java.util.List;
 
@@ -23,15 +24,20 @@ public class Doctor extends User {
         setDefaultTimes();  
     }
     
-    public boolean signIn(String inputName, String inputPassword) {
-        return this.name.equals(inputName) && this.password.equals(inputPassword);
+    public String getPassword(){
+        return this.password;
     }
 
-    private void setDefaultTimes() {
-        availableTimes.add("2024-12-01 10:00 AM");
-        availableTimes.add("2024-12-01 2:00 PM");
-        availableTimes.add("2024-12-02 10:00 AM");
-        availableTimes.add("2024-12-02 2:00 PM");
+    public void addPatient(Patient patient) {
+        this.patients.add(patient);
+    }
+
+    public List<Patient> getPatients() {
+        return patients; 
+    }
+
+    public boolean signIn(String inputName, String inputPassword) {
+        return this.name.equals(inputName) && this.password.equals(inputPassword);
     }
 
     public String getDepartment() {
@@ -42,25 +48,27 @@ public class Doctor extends User {
         return availableTimes;
     }
 
-    public String getPassword(){
-        return this.password;
+    public List<PatientHistory> getAppointments() {
+        return appointments;
     }
 
-    public void addPatient(Patient patient) {
-        this.patients.add(patient);
+    private void setDefaultTimes() {
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd hh:mm a");
+        Calendar calendar = Calendar.getInstance();
+        
+        for (int i = 0; i < 4; i++) {
+            calendar.add(Calendar.DAY_OF_MONTH, i); // Increment days
+            String morningSlot = sdf.format(calendar.getTime()) + " 10:00 AM";
+            String afternoonSlot = sdf.format(calendar.getTime()) + " 2:00 PM";
+            availableTimes.add(morningSlot);
+            availableTimes.add(afternoonSlot);
+        }
     }
 
-    // Method to get the list of patients
-    public List<Patient> getPatients() {
-        return patients;  // Return the list of patients
-    }
-
-
-    public static void DoctorMenu(Scanner scanner, Admin admin) {
+    public static void DoctorMenu(Scanner scanner, Admin admin, PatientDatabase patientDatabase) {
         System.out.print("Enter Doctor's name: ");
         String doctorName = scanner.nextLine();
         
-        // Check if the doctor exists by name
         Doctor loggedInDoctor = admin.getDoctorByName(doctorName);
         
         if (loggedInDoctor != null) {
@@ -69,7 +77,7 @@ public class Doctor extends User {
             String password = scanner.nextLine();
             
             if (password.equals(loggedInDoctor.getPassword())) {  
-                loggedInDoctor.showOptions(scanner, loggedInDoctor);
+                loggedInDoctor.showOptions(scanner, loggedInDoctor, patientDatabase);
             } 
             else {
                 System.out.println("Invalid password. Access denied.");
@@ -80,7 +88,7 @@ public class Doctor extends User {
         }
     }
 
-    public void showOptions(Scanner scanner, Doctor doctor) {
+    public void showOptions(Scanner scanner, Doctor doctor, PatientDatabase patientDatabase) {
         boolean exit = false;
 
         while (!exit) {
@@ -112,10 +120,10 @@ public class Doctor extends User {
                         viewDoctorAppointments(doctor);
                         break;
                     case 5:
-                        viewPatientsAndAddDiagnosis(scanner);
+                        addDiagnosis(scanner, patientDatabase);
                         break;
                     case 6: 
-                        viewAppointmentsAndCancel(scanner, doctor);
+                        cancelAppointments(scanner, doctor);
                         break;
                     case 7:
                         System.out.println("Exiting...");
@@ -131,63 +139,15 @@ public class Doctor extends User {
             }
         }
 
-    public void viewPatientsAndAddDiagnosis(Scanner scanner) {
-        System.out.println("Appointments:");
-        
-        if (appointments.isEmpty()) {
-            System.out.println("No patients available.");
-            return;
-        }
-    
-        // Display the list of patients with appointments
-        for (int i = 0; i < appointments.size(); i++) {
-            PatientHistory history = appointments.get(i);
-            System.out.println((i + 1) + ". " + history.getPatientName() + " - " + history.getVisitDate());
-        }
-    
-        // Let the doctor select a patient
-        int choice = -1; // Initialize to an invalid choice
-        boolean validInput = false;
-
-        // Let the doctor select a patient
-        while (!validInput) {
-            System.out.print("Select a patient by entering the corresponding number: ");
-            
-            try {
-                choice = scanner.nextInt();
-                scanner.nextLine(); // Clear the newline
-                validInput = true; // Mark input as valid if no exception occurs
-            } catch (InputMismatchException e) {
-                System.out.println("Invalid input. Please enter a valid number.");
-                scanner.nextLine(); // Clear the invalid input
-            }
-        }
-
-        if (choice > 0 && choice <= appointments.size()) {
-            PatientHistory selectedPatientHistory = appointments.get(choice - 1);
-            
-            System.out.print("Enter diagnosis: ");
-            String diagnosis = scanner.nextLine();
-            
-            // Add the diagnosis to the patient's history
-            addDiagnosisToAppointment(selectedPatientHistory, diagnosis);
-            appointments.remove(choice - 1);
-        } else {
-            System.out.println("Invalid choice. Please try again.");
-        }
-    }
-    
-    // Method to add the diagnosis to the selected patient's history
-    private void addDiagnosisToAppointment(PatientHistory historyRecord, String diagnosis) {
-        historyRecord.setDiagnosis(diagnosis);
-        System.out.println("Diagnosis added for " + historyRecord.getPatientName() + ": " + diagnosis);
-    }
-    
     public void addAvailableTime(Scanner scanner) {
         System.out.print("Enter date & time to add (e.g., '2023-11-01 10:00 AM'): ");
         String time = scanner.nextLine();
-        availableTimes.add(time);
-        System.out.println("Time added successfully: " + time);
+        if (!availableTimes.contains(time)) {
+            availableTimes.add(time);
+            System.out.println("Time added successfully: " + time);
+        } else {
+            System.out.println("This time slot already exists.");
+        }
     }
 
     public void deleteAvailableTime(Scanner scanner) {
@@ -230,21 +190,6 @@ public class Doctor extends User {
             }
         }
     }
-
-    // Adding an appointment (after a patient books it)
-    public void addAppointment(PatientHistory appointment, String time, String inputName) {
-        if (this.name.equalsIgnoreCase(inputName)) {  
-            this.appointments.add(appointment);
-        } else {
-            System.out.println("Appointment not added. The name doesn't match.");
-        }
-    }
-    
-    public List<PatientHistory> getAppointments() {
-        return appointments;
-    }
-
-    
     public void viewDoctorAppointments(Doctor doctor) {
         if (doctor.getAppointments().isEmpty()) {
             System.out.println("No appointments scheduled for Dr. " + doctor.getName() + ".");
@@ -266,66 +211,162 @@ public class Doctor extends User {
     
             System.out.println("Scheduled appointments for Dr. " + doctor.getName() + ":");
     
-            // Display appointments and cancellation status
             for (int i = 0; i < doctor.getAppointments().size(); i++) {
                 PatientHistory appointment = doctor.getAppointments().get(i);
-                System.out.println((i + 1) + ". Patient: " + appointment.getPatientName());
+                System.out.println((i + 1) + ". Patient: " + appointment.getPatient());
                 System.out.println("   Appointment Date: " + appointment.getVisitDate());
                 System.out.println("   Medical Condition: " + appointment.getMedicalCondition());
                 System.out.println("   Diagnosis: " + appointment.getDiagnosis());
-                System.out.println("   Cancellation Status: " + (appointment.isCancelled() ? "Canceled" : "Scheduled"));
+                System.out.println("   Appointment Status: " + (appointment.isCancelled() ? "Canceled" : "Scheduled"));
                 System.out.println("-------------------------------------------------");
             }
         }
     }
+
+    public void addDiagnosis(Scanner scanner, PatientDatabase patientDatabase) {
+        System.out.println("Appointments:");
+        
+        if (appointments.isEmpty()) {
+            System.out.println("No patients available.");
+            return;
+        }
     
+        for (int i = 0; i < appointments.size(); i++) {
+            PatientHistory history = appointments.get(i);
+            if ("Pending".equals(history.getDiagnosis())) { 
+                System.out.println((i + 1) + ". " + history);
+            }
+        }
+    
+        // Let the doctor select a patient to diagnose
+        int choice = -1;
+        while (choice < 1 || choice > appointments.size()) {
+            System.out.print("Select a patient by entering the corresponding number: ");
+            if (scanner.hasNextInt()) {
+                choice = scanner.nextInt();
+                scanner.nextLine();
+                if (choice < 1 || choice > appointments.size()) {
+                    System.out.println("Invalid choice. Please select a number between 1 and " + appointments.size() + ".");
+                }
+            } else {
+                System.out.println("Invalid input. Please enter a valid number.");
+                scanner.nextLine(); 
+            }
+        }
+    
+        PatientHistory selectedPatientHistory = appointments.get(choice - 1);
+    
+        System.out.print("Enter diagnosis for " + selectedPatientHistory.getPatient() + ": ");
+        String diagnosis = scanner.nextLine();
+    
+        // Use the addDiagnosisToAppointment method to update the diagnosis and status
+        addDiagnosisToAppointment(selectedPatientHistory, diagnosis);
+    
+        // Remove this appointment from the scheduled appointments list since diagnosis is added
+        appointments.remove(selectedPatientHistory);
+        System.out.println("The appointment has been removed from the scheduled list.");
+        
+        // Optionally, add the diagnosed appointment to the patient's medical history here if needed
+        addToMedicalHistory(selectedPatientHistory, patientDatabase);
+    }
+    
+        // Method to add the diagnosed appointment to the patient's medical history
+        public void addToMedicalHistory(PatientHistory patientHistory, PatientDatabase patientDatabase) {
+            Patient patient = patientHistory.getPatient(); // Get the associated patient
+            if (patient != null) {
+                // Add the PatientHistory object to the patient's history list
+                patient.getHistoryRecords().add(patientHistory);
+                System.out.println("Patient's medical history updated.");
+            } else {
+                System.out.println("Error: Could not find the patient to update their medical history.");
+            }
+        }
+     // Method to add diagnosis to the appointment and update status
+     public void addDiagnosisToAppointment(PatientHistory patientHistory, String diagnosis) {
+        if ("Pending".equals(patientHistory.getDiagnosis())) {
+            patientHistory.setDiagnosis(diagnosis);  // Update the diagnosis
+            System.out.println("Diagnosis added: " + diagnosis);
+        } else {
+            System.out.println("Diagnosis already exists or is not pending.");
+        }
+    }
+    
+    
+    public void cancelAppointments(Scanner scanner, Doctor doctor) {
+        List<PatientHistory> appointments = doctor.getAppointments();
+        if (appointments.isEmpty()) {
+            System.out.println("No scheduled appointments for Dr. " + doctor.getName() + ".");
+            return;
+        }
+    
+        // Display the list of appointments
+        System.out.println("Scheduled appointments for Dr. " + doctor.getName() + ":");
+        for (int i = 0; i < appointments.size(); i++) {
+            PatientHistory appointment = appointments.get(i);
+            System.out.println((i + 1) + ". Patient: " + appointment.getPatient().getName() + 
+                               " - " + appointment.getVisitDate());
+        }
+    
+        System.out.print("Enter the number of the appointment to cancel, or 0 to exit: ");
+        int choice = -1;
+    
+        if (scanner.hasNextInt()) {
+            choice = scanner.nextInt();
+            scanner.nextLine(); // Clear buffer
+    
+            if (choice == 0) {
+                System.out.println("Exiting cancellation process.");
+                return;
+            }
+    
+            if (choice > 0 && choice <= appointments.size()) {
+                // Proceed with cancellation
+                System.out.print("Enter the reason for cancellation: ");
+                String reason = scanner.nextLine();
+    
+                // Retrieve and remove the selected appointment
+                PatientHistory selectedAppointment = appointments.get(choice - 1);
+    
+                // Remove from doctor's appointments
+                appointments.remove(selectedAppointment);
+    
+                // Remove from patient's scheduled appointments
+                Patient patient = selectedAppointment.getPatient();
+                if (patient != null) {
+                    patient.getAppointments().remove(selectedAppointment);
+    
+                    // Mark the appointment as cancelled and log the reason
+                    selectedAppointment.setCancelled(true);
+                    selectedAppointment.setCancellationReason(reason);
+    
+                    // Add to patient's cancelled appointments
+                    patient.addCancelledAppointment(selectedAppointment);
+    
+                    System.out.println("Appointment successfully cancelled for patient: " +
+                                       patient.getName());
+                } else {
+                    System.out.println("Error: The patient object is null.");
+                }
+            } else {
+                System.out.println("Invalid selection. No appointment cancelled.");
+            }
+        } else {
+            System.out.println("Invalid input. Please enter a valid number.");
+            scanner.nextLine(); 
+        }
+    }
+
+    // Adding an appointment (after a patient books it)
+    public void addAppointment(PatientHistory appointment, String time, String inputName) {
+        if (this.name.equalsIgnoreCase(inputName)) {  
+            this.appointments.add(appointment);
+        } else {
+            System.out.println("Appointment not added. The name doesn't match.");
+        }
+    }
     
     public void removeAvailableTime(String time) {
         availableTimes.remove(time);
     }
 
-    public void cancelAppointment(Doctor doctor, int appointmentIndex) {
-        if (appointmentIndex >= 0 && appointmentIndex < doctor.getAppointments().size()) {
-            PatientHistory appointment = doctor.getAppointments().get(appointmentIndex);
-            appointment.setCancelled(true);  
-            System.out.println("Appointment for " + appointment.getPatientName() + " has been canceled.");
-    
-            // Find the patient who owns this appointment and cancel it in their list as well
-            for (Patient patient : doctor.getPatients()) {  
-                if (patient.getName().equals(appointment.getPatientName())) {
-                    for (PatientHistory patientAppointment : patient.getAppointments()) {
-                        if (patientAppointment.equals(appointment)) {
-                            patientAppointment.setCancelled(true);  
-                        }
-                    }
-                }
-            }
-        } else {
-            System.out.println("Invalid appointment index.");
-        }
-    }
-    
-    public void viewAppointmentsAndCancel(Scanner scanner, Doctor doctor) {
-        if (doctor.getAppointments().isEmpty()) {
-            System.out.println("No appointments scheduled.");
-        } else {
-            System.out.println("Scheduled appointments for Dr. " + doctor.getName() + ":");
-            for (int i = 0; i < doctor.getAppointments().size(); i++) {
-                PatientHistory appointment = doctor.getAppointments().get(i);
-                System.out.println((i + 1) + ". Patient: " + appointment.getPatientName() + " - " + appointment.getVisitDate());
-            }
-    
-            System.out.println("Enter the number of the appointment to cancel, or 0 to exit:");
-            int choice = scanner.nextInt();
-    
-           
-            if (choice > 0 && choice <= doctor.getAppointments().size()) {
-                appointments.remove(choice - 1);
-                cancelAppointment(doctor, choice - 1);  
-            } else {
-                System.out.println("Exiting appointment cancellation.");
-            }
-        }
-    }
-    
 }
