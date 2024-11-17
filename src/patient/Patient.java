@@ -1,7 +1,12 @@
+package patient;
+
 import java.util.ArrayList;
 import java.util.InputMismatchException;
 import java.util.List;
 import java.util.Scanner;
+import doctor_admin.Admin; // For accessing Admin
+import doctor_admin.Doctor;
+import user.User;
 
 public class Patient extends User {
     private String address;

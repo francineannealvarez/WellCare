@@ -1,4 +1,9 @@
+package doctor_admin;
+
 import java.util.Scanner;
+import patient.Patient;
+import patient.PatientHistory;
+import patient.PatientDatabase;
 import java.text.SimpleDateFormat;
 import java.util.Collections;
 import java.util.Comparator;
@@ -6,6 +11,8 @@ import java.util.Date;
 import java.util.ArrayList;
 import java.util.InputMismatchException;
 import java.util.List;
+import user.User;
+
 
 public class Doctor extends User { 
     private String department;

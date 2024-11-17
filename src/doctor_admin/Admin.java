@@ -1,11 +1,30 @@
+package doctor_admin;
+
 import java.util.ArrayList;
 import java.util.InputMismatchException;
 import java.util.List;
 import java.util.Scanner;
+import user.User;
 
-public class Admin {
+public class Admin extends User{
     private static List<Doctor> doctors = new ArrayList<>();
     private static List<String> departments = new ArrayList<>();
+
+    public Admin(String name, String password) {
+        super("admin", "adminpass");  // Calling the constructor of the User class
+    }
+
+    public static List<Doctor> getDoctors() {
+        return doctors;
+    }
+
+    public static void addDoctor(Doctor doctor) {
+        doctors.add(doctor);
+    }
+
+    public List<String> getDepartments() {
+        return departments;
+    }
 
     public static void addDepartment(Scanner scanner) {
         System.out.print("Enter the name of the department to add: ");
@@ -19,25 +38,13 @@ public class Admin {
         }
     }
 
-    public static boolean signIn(Scanner scanner) {
+    public boolean signIn(Scanner scanner) {
         System.out.print("Enter admin username: ");
         String inputUsername = scanner.nextLine();
         System.out.print("Enter admin password: ");
         String inputPassword = scanner.nextLine();
 
-        return "admin".equals(inputUsername) && "adminpass".equals(inputPassword);
-    }
-
-    public static List<Doctor> getDoctors() {
-        return doctors;
-    }
-
-    public static void addDoctor(Doctor doctor) {
-        doctors.add(doctor);
-    }
-
-    public List<String> getDepartments() {
-        return departments;
+        return this.getName().equals(inputUsername) && this.signIn(inputPassword);  // Using the signIn method from User class
     }
 
     public void initDepartments() {

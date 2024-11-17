@@ -47,7 +47,7 @@ public void displayTips() {
     System.out.println("   - Limit processed foods, coffee, and salt to maintain healthy blood pressure.\n");
 
     System.out.println("Consistency is key! Make these foods part of your routine, and consult a healthcare provider for personalized guidance.");
-    System.out.println("====================================================================================================================================\n");
+    System.out.println("\n==========================================================================================================================\n");
 }
 
 }

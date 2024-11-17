@@ -1,5 +1,8 @@
+package patient;
+
 import java.util.ArrayList;
 import java.util.List;
+
 
 public class PatientDatabase {
     private List<Patient> patients;

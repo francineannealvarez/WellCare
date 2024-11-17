@@ -1,14 +1,18 @@
 import java.util.InputMismatchException;
 import java.util.Scanner;
+import patient.PatientDatabase;
+import patient.Patient;
+import doctor_admin.Admin; 
+import doctor_admin.Doctor;
+import healthtips.HealthTips;
 
 public class Main {
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
-        Admin admin = new Admin();
+        Admin admin = new Admin(null, null);
         Doctor doctor = new Doctor(null, null);
         admin.initDepartments();
-        PatientDatabase patientDatabase = new PatientDatabase(); 
-        
+        PatientDatabase patientDatabase = new PatientDatabase();
 
         boolean exit = false;
 
@@ -17,7 +21,8 @@ public class Main {
             System.out.println("1. Patient Menu");
             System.out.println("2. Doctor");
             System.out.println("3. Admin");
-            System.out.println("4. Exit");
+            System.out.println("4. Healthy Tips");
+            System.out.println("5. Exit");
             System.out.print("Choose an option: ");
             
             try {
@@ -32,13 +37,16 @@ public class Main {
                         Doctor.DoctorMenu(scanner, admin, patientDatabase);
                         break;
                     case 3:
-                        if (Admin.signIn(scanner)) {
+                        if (admin.signIn(scanner)) {
                             admin.adminMenu(scanner);
                         } else {
                             System.out.println("Sign-in failed. Please check your username and password.");
                         }
                         break; 
                     case 4:
+                        HealthTips.showCategories(scanner); 
+                        break;
+                    case 5:
                         exit = true;
                         System.out.println("Exiting...");
                         break; 

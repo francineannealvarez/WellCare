@@ -1,4 +1,4 @@
-
+package patient;
 
 public class PatientHistory {
     private Patient patient;

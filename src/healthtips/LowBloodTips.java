@@ -35,6 +35,6 @@ public class LowBloodTips extends HealthTips {
         System.out.println("   - Foods like olives can help maintain healthy sodium levels.\n");
 
         System.out.println("Stay consistent with these tips, and consult your doctor for personalized advice!");
-        System.out.println("=======================================================================================\n");
+        System.out.println("\n==========================================================================================================================\n");
     }
 }
