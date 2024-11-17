@@ -1,3 +1,5 @@
+package healthtips;
+
 public abstract class HealthTips {
     protected String title; // Each health tip can have a title or category name
 

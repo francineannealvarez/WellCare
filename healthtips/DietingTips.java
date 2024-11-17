@@ -1,7 +1,8 @@
-public class HighBloodTips extends HealthTips {
+package healthtips;
 
-    public HighBloodTips() {
-        super("Healthy Foods for High Blood");
+public class DietingTips extends HealthTips{
+    public DietingTips() {
+        super("Healthy Foods for those who wants to Diet");
     }
 
     @Override
