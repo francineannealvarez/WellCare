@@ -4,7 +4,6 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.InputMismatchException;
 import java.util.List;
 
@@ -53,17 +52,15 @@ public class Doctor extends User {
     }
 
     private void setDefaultTimes() {
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd hh:mm a");
-        Calendar calendar = Calendar.getInstance();
-        
-        for (int i = 0; i < 4; i++) {
-            calendar.add(Calendar.DAY_OF_MONTH, i); // Increment days
-            String morningSlot = sdf.format(calendar.getTime()) + " 10:00 AM";
-            String afternoonSlot = sdf.format(calendar.getTime()) + " 2:00 PM";
-            availableTimes.add(morningSlot);
-            availableTimes.add(afternoonSlot);
-        }
+        // Add a fixed time slot directly
+        availableTimes.add("Dec 12, 2024 10:00 AM");
+        availableTimes.add("Dec 12, 2024 2:00 PM");
+        availableTimes.add("Dec 13, 2024 10:00 AM");
+        availableTimes.add("Dec 13, 2024 2:00 PM");
+        availableTimes.add("Dec 14, 2024 10:00 AM");
+        availableTimes.add("Dec 14, 2024 2:00 PM");
     }
+    
 
     public static void DoctorMenu(Scanner scanner, Admin admin, PatientDatabase patientDatabase) {
         System.out.print("Enter Doctor's name: ");
@@ -190,16 +187,19 @@ public class Doctor extends User {
             }
         }
     }
+
     public void viewDoctorAppointments(Doctor doctor) {
         if (doctor.getAppointments().isEmpty()) {
             System.out.println("No appointments scheduled for Dr. " + doctor.getName() + ".");
         } else {
+            // Sorting appointments by date
             Collections.sort(doctor.getAppointments(), new Comparator<PatientHistory>() {
                 @Override
                 public int compare(PatientHistory appointment1, PatientHistory appointment2) {
                     try {
-                        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd hh:mm a");
-                        Date date1 = sdf.parse(appointment1.getVisitDate());
+                        // Adjusting the SimpleDateFormat to handle the format used for appointment date
+                        SimpleDateFormat sdf = new SimpleDateFormat("MMM dd, yyyy hh:mm a");
+                        Date date1 = sdf.parse(appointment1.getVisitDate()); // Dec 14, 2024 10:00 AM
                         Date date2 = sdf.parse(appointment2.getVisitDate());
                         return date1.compareTo(date2);
                     } catch (Exception e) {
@@ -209,20 +209,48 @@ public class Doctor extends User {
                 }
             });
     
-            System.out.println("Scheduled appointments for Dr. " + doctor.getName() + ":");
+            // Printing header for the table
+            System.out.printf("%-5s %-20s %-20s %-30s %-20s\n", "No.", "Patient", "Diagnosis", "Appointment Date", "Status");
+            System.out.println("---------------------------------------------------------------------------------------------------------------------------------------------------");
     
+            // Displaying the appointments
             for (int i = 0; i < doctor.getAppointments().size(); i++) {
                 PatientHistory appointment = doctor.getAppointments().get(i);
-                System.out.println((i + 1) + ". Patient: " + appointment.getPatient());
-                System.out.println("   Appointment Date: " + appointment.getVisitDate());
-                System.out.println("   Medical Condition: " + appointment.getMedicalCondition());
-                System.out.println("   Diagnosis: " + appointment.getDiagnosis());
-                System.out.println("   Appointment Status: " + (appointment.isCancelled() ? "Canceled" : "Scheduled"));
-                System.out.println("-------------------------------------------------");
+    
+                // Fetching patient details
+                String patientName = appointment.getPatient().getName();
+                String diagnosis = appointment.getDiagnosis();
+                String visitDate = appointment.getVisitDate();
+                String status = appointment.isCancelled() ? "Cancelled" : "Scheduled";
+    
+                // Parsing visitDate for more consistent formatting
+                String formattedDate = formatDate(visitDate);
+    
+                // Printing appointment details in table format
+                System.out.printf("%-5d %-20s %-20s %-30s %-20s\n", i + 1, patientName, diagnosis, formattedDate, status);
             }
+    
+            System.out.println("---------------------------------------------------------------------------------------------------------------------------------------------------");
         }
     }
-
+    
+    // Method to format the visit date for display (e.g., Dec 14, 2024 10:00 AM)
+    private String formatDate(String visitDate) {
+        try {
+            // Using the same format used for appointment date parsing
+            SimpleDateFormat sdfInput = new SimpleDateFormat("MMM dd, yyyy hh:mm a");
+            Date date = sdfInput.parse(visitDate);
+    
+            // Formatting date for better readability
+            SimpleDateFormat sdfOutput = new SimpleDateFormat("MMM dd, yyyy hh:mm a");
+            return sdfOutput.format(date);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return visitDate;  // In case of error, return original visitDate
+        }
+    }
+    
+    
     public void addDiagnosis(Scanner scanner, PatientDatabase patientDatabase) {
         System.out.println("Appointments:");
         

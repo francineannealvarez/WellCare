@@ -343,17 +343,18 @@ public class Patient extends User {
     
     
     public void displayPatientInfo() {
-        System.out.println("Patient Information");
-        System.out.println("Name: " + name);
-        System.out.println("Email: " + email);
-        System.out.println("Contact Number: " + contactNo);
-        System.out.println("Address: " + address);
-        System.out.println("Birthday: " + bday);
-        System.out.println("Emergency Contact: " + emergencyNo);
-        System.out.println("Gender: " + gender);
-        System.out.println("Allergies: " + allergy);
-        System.out.println("Past Surgeries/Treatments: " + past);
-        System.out.println("Blood Type: " + bloodtype);
+        System.out.println("Patient Information:");
+        System.out.println("----------------------");
+        System.out.printf("%-30s %-30s\n", "Name:", name);
+        System.out.printf("%-30s %-30s\n", "Email:", email);
+        System.out.printf("%-30s %-30s\n", "Contact Number:", contactNo);
+        System.out.printf("%-30s %-30s\n", "Address:", address);
+        System.out.printf("%-30s %-30s\n", "Birthday:", bday);
+        System.out.printf("%-30s %-30s\n", "Emergency Contact:", emergencyNo);
+        System.out.printf("%-30s %-30s\n", "Gender:", gender);
+        System.out.printf("%-30s %-30s\n", "Allergies:", allergy);
+        System.out.printf("%-30s %-30s\n", "Past Surgeries/Treatments:", past);
+        System.out.printf("%-30s %-30s\n", "Blood Type:", bloodtype);
     }
     
     

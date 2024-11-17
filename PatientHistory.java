@@ -101,23 +101,26 @@ public class PatientHistory {
     
     @Override
     public String toString() {
-        return "Patient Name: " + patientName + "\n" +
-               "Visit Date: " + visitDate + "\n" +
-               "Department: " + department + "\n" +
-               "Doctor: " + doctorName + "\n" +
-               "Medical Condition: " + medicalCondition + "\n" +
-               "Diagnosis: " + diagnosis;
-    }
+            return String.format("%-20s %-30s\n", "Patient Name:", patientName) +
+                   String.format("%-20s %-30s\n", "Visit Date:", visitDate) +
+                   String.format("%-20s %-30s\n", "Department:", department) +
+                   String.format("%-20s %-30s\n", "Doctor:", doctorName) +
+                   String.format("%-20s %-30s\n", "Medical Condition:", medicalCondition) +
+                   String.format("%-20s %-30s\n", "Diagnosis:", diagnosis);
+        }
+        
+    
 
 
     public String toStringForAppointment(boolean includeStatus) {
-        return "Patient Name: " + patientName + "\n" +
-               "Visit Date: " + visitDate + "\n" +
-               "Department: " + department + "\n" +
-               "Doctor: " + doctorName + "\n" +
-               "Medical Condition: " + medicalCondition + "\n" +
-               "Diagnosis: " + (hasDiagnosis() ? diagnosis : "Pending") + "\n" +
-               (includeStatus ? "Status: " + (hasDiagnosis() ? "Scheduled" : "Pending") + "\n" : "");
+        String status = includeStatus ? String.format("%-20s %-30s\n", "Status:", (hasDiagnosis() ? "Scheduled" : "Pending")) : "";
+        return String.format("%-20s %-30s\n", "Patient Name:", patientName) +
+           String.format("%-20s %-30s\n", "Visit Date:", visitDate) +
+           String.format("%-20s %-30s\n", "Department:", department) +
+           String.format("%-20s %-30s\n", "Doctor:", doctorName) +
+           String.format("%-20s %-30s\n", "Medical Condition:", medicalCondition) +
+           String.format("%-20s %-30s\n", "Diagnosis:", hasDiagnosis() ? diagnosis : "Pending") +
+           status;
     }
     
     

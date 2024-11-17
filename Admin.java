@@ -87,24 +87,37 @@ public class Admin {
     }
 
     public static void viewDoctors() {
-        System.out.println("List of doctors:");
+        System.out.println("List of Doctors:");
+        System.out.println("-----------------");
+    
         if (doctors.isEmpty()) {
             System.out.println("No doctors available.");
         } else {
+            // Add headers for better readability
+            System.out.printf("%-5s %-30s %-20s\n", "No.", "Doctor Name", "Department");
+    
+            // Display doctors with formatted output
             for (int i = 0; i < doctors.size(); i++) {
                 Doctor doctor = doctors.get(i);
-                System.out.println((i + 1) + ". Dr. " + doctor.getName() + " (Department: " + doctor.getDepartment() + ")");
+                System.out.printf("%-5d %-30s %-20s\n", (i + 1), "Dr. " + doctor.getName(), doctor.getDepartment());
             }
         }
     }
     
+    
     public static void showDepartments() {
-        System.out.println("List of departments:");
+        System.out.println("List of Departments:");
+        System.out.println("---------------------");
+
         if (departments.isEmpty()) {
             System.out.println("No departments available.");
         } else {
+            // Add a header for better readability
+            System.out.printf("%-5s %-30s\n", "No.", "Department Name");
+
+            // Display departments with formatted output
             for (int i = 0; i < departments.size(); i++) {
-                System.out.println((i + 1) + ". " + departments.get(i));
+                System.out.printf("%-5d %-30s\n", (i + 1), departments.get(i));
             }
         }
     }    
