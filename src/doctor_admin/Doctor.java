@@ -12,21 +12,26 @@ import java.util.ArrayList;
 import java.util.InputMismatchException;
 import java.util.List;
 import user.User;
+import display.DisplayUtils;
 
 
 public class Doctor extends User { 
+    private String doctorId;
     private String department;
     private List<Patient> patients;
     private List<String> availableTimes;
     private List<PatientHistory> appointments;
+    private DisplayUtils display;
 
-    public Doctor(String name, String department) {
+    public Doctor(String name, String department, String doctorId) {
         super(name, "WellCare");
         this.password = "WellCare";
+        this.doctorId = doctorId;
         this.department = department;
         this.patients = new ArrayList<>();
         this.availableTimes = new ArrayList<>();
         this.appointments = new ArrayList<>();
+    
         setDefaultTimes();  
     }
     
@@ -38,24 +43,33 @@ public class Doctor extends User {
         this.patients.add(patient);
     }
 
-    public List<Patient> getPatients() {
-        return patients; 
-    }
-
-    public boolean signIn(String inputName, String inputPassword) {
-        return this.name.equals(inputName) && this.password.equals(inputPassword);
+    public String getDoctorId() {
+        return doctorId;
     }
 
     public String getDepartment() {
         return department;
     }
 
+    public List<Patient> getPatients() {
+        return patients; 
+    }
+
+    // Setter for doctorId
+    public void setDoctorId(String doctorId) {
+        this.doctorId = doctorId;
+    }
+    
     public List<String> getAvailableTimes() {
         return availableTimes;
     }
 
     public List<PatientHistory> getAppointments() {
         return appointments;
+    }
+
+    public DisplayUtils getDisplay(){
+        return display;
     }
 
     private void setDefaultTimes() {
@@ -68,8 +82,12 @@ public class Doctor extends User {
         availableTimes.add("Dec 14, 2024 2:00 PM");
     }
     
+    public boolean signIn(String inputName, String inputPassword) {
+        return this.name.equals(inputName) && this.password.equals(inputPassword);
+    }
 
-    public static void DoctorMenu(Scanner scanner, Admin admin, PatientDatabase patientDatabase) {
+    public static void DoctorMenu(Scanner scanner, Admin admin, PatientDatabase patientDatabase, DisplayUtils display) {
+        display.printHeader("DOCTOR LOGIN");
         System.out.print("Enter Doctor's name: ");
         String doctorName = scanner.nextLine();
         
@@ -81,7 +99,7 @@ public class Doctor extends User {
             String password = scanner.nextLine();
             
             if (password.equals(loggedInDoctor.getPassword())) {  
-                loggedInDoctor.showOptions(scanner, loggedInDoctor, patientDatabase);
+                loggedInDoctor.showOptions(scanner, loggedInDoctor, patientDatabase, display);
             } 
             else {
                 System.out.println("Invalid password. Access denied.");
@@ -92,10 +110,11 @@ public class Doctor extends User {
         }
     }
 
-    public void showOptions(Scanner scanner, Doctor doctor, PatientDatabase patientDatabase) {
+    public void showOptions(Scanner scanner, Doctor doctor, PatientDatabase patientDatabase, DisplayUtils display) {
         boolean exit = false;
 
         while (!exit) {
+            display.printHeader("DOCTOR'S MENU");
             System.out.println("\nSelect an option:");
             System.out.println("1. Add available time");
             System.out.println("2. Delete available time");
@@ -103,7 +122,8 @@ public class Doctor extends User {
             System.out.println("4. View Appointments");
             System.out.println("5. Add Diagnosis");
             System.out.println("6. Cancel Appointment");
-            System.out.println("7. Exit");
+            System.out.println("7. View Patient Information");
+            System.out.println("8. Exit");
             System.out.print("Please select an option by entering the corresponding number: " );
 
             try{
@@ -112,24 +132,27 @@ public class Doctor extends User {
 
                 switch (choice) {
                     case 1:
-                        addAvailableTime(scanner);
+                        addAvailableTime(scanner, display);
                         break;
                     case 2:
-                        deleteAvailableTime(scanner);
+                        deleteAvailableTime(scanner, display);
                         break;
                     case 3:
-                        viewSchedule();
+                        viewSchedule(display);
                         break;
                     case 4:
-                        viewDoctorAppointments(doctor);
+                        viewDoctorAppointments(doctor, display);
                         break;
                     case 5:
-                        addDiagnosis(scanner, patientDatabase);
+                        addDiagnosis(scanner, patientDatabase, display);
                         break;
                     case 6: 
-                        cancelAppointments(scanner, doctor);
+                        cancelAppointments(scanner, doctor, display);
                         break;
                     case 7:
+                        viewPatientInfo(scanner, patientDatabase, display);
+                        break;
+                    case 8:
                         System.out.println("Exiting...");
                         exit = true;
                         break;
@@ -143,7 +166,8 @@ public class Doctor extends User {
             }
         }
 
-    public void addAvailableTime(Scanner scanner) {
+    public void addAvailableTime(Scanner scanner, DisplayUtils display) {
+        display.printHeader("UPDATE YOUR SCHEDULE: ADD TIME SLOT");
         System.out.print("Enter date & time to add (e.g., '2023-11-01 10:00 AM'): ");
         String time = scanner.nextLine();
         if (!availableTimes.contains(time)) {
@@ -154,7 +178,8 @@ public class Doctor extends User {
         }
     }
 
-    public void deleteAvailableTime(Scanner scanner) {
+    public void deleteAvailableTime(Scanner scanner, DisplayUtils display) {
+        display.printHeader("UPDATE YOUR SCHEDULE: REMOVE TIME SLOT");
         System.out.println("Available appointment slots:");
         for (int i = 0; i < availableTimes.size(); i++) {
             System.out.println((i + 1) + ". " + availableTimes.get(i));
@@ -184,7 +209,8 @@ public class Doctor extends User {
         }
     }
 
-    public void viewSchedule() {
+    public void viewSchedule(DisplayUtils display) {
+        display.printHeader("AVAILABLE APPOINTMENT SLOTS");
         System.out.println("Available appointment slot for Dr. " + this.getName() + " in " + this.department + " department:");
         if (availableTimes.isEmpty()) {
             System.out.println("No available slots.");
@@ -195,7 +221,8 @@ public class Doctor extends User {
         }
     }
 
-    public void viewDoctorAppointments(Doctor doctor) {
+    public void viewDoctorAppointments(Doctor doctor, DisplayUtils display) {
+        display.printHeader("YOUR SCHEDULED APPOINTMENTS");
         if (doctor.getAppointments().isEmpty()) {
             System.out.println("No appointments scheduled for Dr. " + doctor.getName() + ".");
         } else {
@@ -228,13 +255,14 @@ public class Doctor extends User {
                 String patientName = appointment.getPatient().getName();
                 String diagnosis = appointment.getDiagnosis();
                 String visitDate = appointment.getVisitDate();
+                String condition = appointment.getMedicalCondition();
                 String status = appointment.isCancelled() ? "Cancelled" : "Scheduled";
     
                 // Parsing visitDate for more consistent formatting
                 String formattedDate = formatDate(visitDate);
     
                 // Printing appointment details in table format
-                System.out.printf("%-5d %-20s %-20s %-30s %-20s\n", i + 1, patientName, diagnosis, formattedDate, status);
+                System.out.printf("%-5d %-20s %-20s %-30s %-20s\n", i + 1, patientName, diagnosis, formattedDate, condition, status);
             }
     
             System.out.println("---------------------------------------------------------------------------------------------------------------------------------------------------");
@@ -258,7 +286,8 @@ public class Doctor extends User {
     }
     
     
-    public void addDiagnosis(Scanner scanner, PatientDatabase patientDatabase) {
+    public void addDiagnosis(Scanner scanner, PatientDatabase patientDatabase, DisplayUtils display) {
+        display.printHeader("ADD DIAGNOSIS TO PATIENT RECORD");
         System.out.println("Appointments:");
         
         if (appointments.isEmpty()) {
@@ -293,6 +322,7 @@ public class Doctor extends User {
     
         System.out.print("Enter diagnosis for " + selectedPatientHistory.getPatient() + ": ");
         String diagnosis = scanner.nextLine();
+        System.out.println("\n");
     
         // Use the addDiagnosisToAppointment method to update the diagnosis and status
         addDiagnosisToAppointment(selectedPatientHistory, diagnosis);
@@ -316,6 +346,7 @@ public class Doctor extends User {
                 System.out.println("Error: Could not find the patient to update their medical history.");
             }
         }
+
      // Method to add diagnosis to the appointment and update status
      public void addDiagnosisToAppointment(PatientHistory patientHistory, String diagnosis) {
         if ("Pending".equals(patientHistory.getDiagnosis())) {
@@ -327,7 +358,8 @@ public class Doctor extends User {
     }
     
     
-    public void cancelAppointments(Scanner scanner, Doctor doctor) {
+    public void cancelAppointments(Scanner scanner, Doctor doctor, DisplayUtils display) {
+        display.printHeader("CANCEL APPOINTMENT");
         List<PatientHistory> appointments = doctor.getAppointments();
         if (appointments.isEmpty()) {
             System.out.println("No scheduled appointments for Dr. " + doctor.getName() + ".");
@@ -402,6 +434,20 @@ public class Doctor extends User {
     
     public void removeAvailableTime(String time) {
         availableTimes.remove(time);
+    }
+
+    public void viewPatientInfo(Scanner scanner, PatientDatabase patientDatabase, DisplayUtils display) {
+        display.printHeader("VIEW PATIENT INFORMATION");
+        System.out.println("Enter Patient's Name to View Information: ");
+        String patientName = scanner.nextLine();
+    
+        Patient foundPatient = patientDatabase.findByName(patientName);
+    
+        if (foundPatient != null) {
+            foundPatient.displayPatientInfo(display);
+        } else {
+            display.printMessage("Patient not found!");
+        }
     }
 
 }

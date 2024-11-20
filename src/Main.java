@@ -5,19 +5,21 @@ import patient.Patient;
 import doctor_admin.Admin; 
 import doctor_admin.Doctor;
 import healthtips.HealthTips;
+import display.DisplayUtils;
 
 public class Main {
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
         Admin admin = new Admin(null, null);
-        Doctor doctor = new Doctor(null, null);
+        Doctor doctor = new Doctor(null,null, null);
         admin.initDepartments();
         PatientDatabase patientDatabase = new PatientDatabase();
+        DisplayUtils display = new DisplayUtils();
 
         boolean exit = false;
 
         while (!exit) {
-            System.out.println("\nWelcome to the Hospital Booking System!");
+            display.printHeader("Welcome to the Hospital Bookung System!");
             System.out.println("1. Patient Menu");
             System.out.println("2. Doctor");
             System.out.println("3. Admin");
@@ -31,20 +33,20 @@ public class Main {
 
                 switch (choice) {
                     case 1:
-                        Patient.patientMenu(scanner, patientDatabase, admin, doctor); 
+                        Patient.patientMenu(scanner, patientDatabase, admin, doctor, display); 
                         break;
                     case 2:
-                        Doctor.DoctorMenu(scanner, admin, patientDatabase);
+                        Doctor.DoctorMenu(scanner, admin, patientDatabase, display);
                         break;
                     case 3:
-                        if (admin.signIn(scanner)) {
-                            admin.adminMenu(scanner);
+                        if (admin.signIn(scanner, display)) {
+                            admin.adminMenu(scanner, display);
                         } else {
                             System.out.println("Sign-in failed. Please check your username and password.");
                         }
                         break; 
                     case 4:
-                        HealthTips.showCategories(scanner); 
+                        HealthTips.showCategories(scanner, display); 
                         break;
                     case 5:
                         exit = true;

@@ -31,7 +31,11 @@ public class PatientDatabase {
                 return patient;
             }
         }
-        return null;// will return null if no match is found
+        return null;
+    }
+
+    public int getPatientCount() {
+        return patients.size(); 
     }
 }
 

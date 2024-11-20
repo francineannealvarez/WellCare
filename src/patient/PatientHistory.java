@@ -3,6 +3,7 @@ package patient;
 public class PatientHistory {
     private Patient patient;
     private String patientName;
+    private String patientId;
     private String visitDate; 
     private String department;
     private String doctorName;
@@ -29,6 +30,7 @@ public class PatientHistory {
         }
     
         this.patient = patient;
+        this.patientId = patient.getUniqueId(); 
         this.patientName = patient.getName();  // Set the patient's name from the Patient object
         this.visitDate = visitDate;
         this.department = department;
@@ -42,6 +44,10 @@ public class PatientHistory {
 
     public Patient getPatient() {
         return patient;
+    }
+
+    public String getPatientId() {
+        return patientId;
     }
 
     public String getVisitDate() {
@@ -101,7 +107,8 @@ public class PatientHistory {
     
     @Override
     public String toString() {
-            return String.format("%-20s %-30s\n", "Patient Name:", patientName) +
+            return String.format("%-20s %-30s\n", "Patient ID:", patientId) +
+                   String.format("%-20s %-30s\n", "Patient Name:", patientName) +
                    String.format("%-20s %-30s\n", "Visit Date:", visitDate) +
                    String.format("%-20s %-30s\n", "Department:", department) +
                    String.format("%-20s %-30s\n", "Doctor:", doctorName) +
@@ -109,12 +116,10 @@ public class PatientHistory {
                    String.format("%-20s %-30s\n", "Diagnosis:", diagnosis);
         }
         
-    
-
-
     public String toStringForAppointment(boolean includeStatus) {
         String status = includeStatus ? String.format("%-20s %-30s\n", "Status:", (hasDiagnosis() ? "Scheduled" : "Pending")) : "";
-        return String.format("%-20s %-30s\n", "Patient Name:", patientName) +
+        return String.format("%-20s %-30s\n", "Patient ID:", patientId) +
+           String.format("%-20s %-30s\n", "Patient Name:", patientName) +
            String.format("%-20s %-30s\n", "Visit Date:", visitDate) +
            String.format("%-20s %-30s\n", "Department:", department) +
            String.format("%-20s %-30s\n", "Doctor:", doctorName) +
@@ -123,14 +128,14 @@ public class PatientHistory {
            status;
     }
     
-    
     //Used in booking appointment to avoid duplication
     @Override
     public boolean equals(Object obj) {
         if (this == obj) return true;
         if (!(obj instanceof PatientHistory)) return false;
         PatientHistory other = (PatientHistory) obj;
-        return patientName.equals(other.patientName) &&
+        return patientId.equals(other.patientId) &&
+               patientName.equals(other.patientName) &&
                visitDate.equals(other.visitDate) &&
                department.equals(other.department) &&
                doctorName.equals(other.doctorName) &&

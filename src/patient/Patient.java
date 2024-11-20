@@ -1,65 +1,115 @@
 package patient;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.InputMismatchException;
 import java.util.List;
 import java.util.Scanner;
-import doctor_admin.Admin; // For accessing Admin
+import doctor_admin.Admin; 
 import doctor_admin.Doctor;
+import display.DisplayUtils;
 import user.User;
 
 public class Patient extends User {
+    private String patientId;
+    private String placeOfBirth;
     private String address;
-    private String bday;
+    private String province;
+    private String city;
+    private String barangay;
+    private LocalDate bday;
     private String contactNo;
     private String email;
     private String emergencyNo;
     private Gender gender;
+    private String nationality;
+    private String maritalStatus;
     private String allergy;
     private String past; // past surgeries or treatments
     private String bloodtype;
+    private boolean hasDisability;
+    private String disabilityDetails;
+    private boolean isVaccinated;
     private List<PatientHistory> historyRecords = new ArrayList<>();
     private List<PatientHistory> appointments;
     private List<PatientHistory> cancelledAppointments;
-    
     private Admin admin; 
+    private DisplayUtils display;
 
     enum Gender {
         Female, Male
     }
-    public Patient(String name, String password, String address, String bday, String contactNo, String email,
-                   String emergencyNo, Gender gender, String allergy, String past, String bloodtype, Admin admin) {
-        super(name, password);  
+
+    public Patient(String patientId, String name, String password, String address, String province, String barangay, String placeOfBirth, LocalDate bday, String contactNo, String email,
+                   String emergencyNo, Gender gender, String nationality, String maritalStatus, String allergy, String past, String bloodtype, boolean hasDisability, boolean isVaccinated, Admin admin, DisplayUtils display) {
+        super(name, password); 
         this.address = address;
+        this.province =  province;
+        this.barangay = barangay;
         this.bday = bday;
+        this.placeOfBirth = placeOfBirth;
         this.contactNo = contactNo;
         this.email = email;
         this.emergencyNo = emergencyNo;
         this.gender = gender;
+        this.nationality = nationality;
+        this.maritalStatus =  maritalStatus;
         this.allergy = allergy;
         this.past = past;
         this.bloodtype = bloodtype;
-        this.historyRecords = new ArrayList<>();
         this.admin = admin;
+        this.patientId = patientId;
+        this.hasDisability = hasDisability;
+        this.isVaccinated = isVaccinated;
+        this.display = display;
         this.appointments = new ArrayList<>();
         this.cancelledAppointments = new ArrayList<>();
-    }
-
-    public Patient(String name, String password) {
-        super(name, password);  
-    }
-
-    public String getName() {
-        return super.getName();  
+        this.historyRecords = new ArrayList<>();
     }
 
     @Override
-    public String toString() {
-        return getName();  
+    public String toString() { 
+        return getName(); 
     } 
-    
-    public Admin getAdmin(){
-        return admin;
+
+    public Patient(String name, String password) { 
+        super(name, password);  
+    }
+
+    public String getUniqueId() {
+        return patientId;
+    }
+
+    public String getName() {
+        return super.getName(); 
+    }
+
+    public Admin getAdmin() { 
+        return admin; 
+    }
+
+    public DisplayUtils getDisplay(){
+        return display;
+    }
+
+    public Gender getGender() { 
+        return gender; 
+    }
+
+    public LocalDate getBday() {
+        return bday;
+    }
+
+    public void setBday(LocalDate bday) {
+        this.bday = bday;
+    }
+
+    public List<PatientHistory> getAppointments() { 
+        return appointments; 
+    }
+
+    public List<PatientHistory> getHistoryRecords() { 
+        return historyRecords; 
     }
     
     public void addAppointment(PatientHistory appointment) {
@@ -69,21 +119,9 @@ public class Patient extends User {
     public void removeAppointment(PatientHistory appointment) {
         this.appointments.remove(appointment);  
     }
-    
-    public Gender getGender() {
-        return gender;
-    }
 
     public void setGender(Gender gender) {
         this.gender = gender;
-    }
-
-    public List<PatientHistory> getAppointments() {
-        return appointments;
-    }
-
-    public List<PatientHistory> getHistoryRecords() {
-        return historyRecords;
     }
     
     public List<PatientHistory> getCancelledAppointments() {
@@ -104,85 +142,161 @@ public class Patient extends User {
         }
     }
     
+    private String generateUniqueId(PatientDatabase patientDatabase) {
+        String date = java.time.LocalDate.now().toString().replace("-", "");
+        int patientNumber = patientDatabase.getPatientCount() + 1; 
+        return "P" + date + String.format("%05d", patientNumber);
+    }
 
-    public boolean signup(Scanner scanner, PatientDatabase patientDatabase) {
-        System.out.println("Please fill in the following details to sign up. Note: Some fields are case-sensitive.");
+    public boolean signup(Scanner scanner, PatientDatabase patientDatabase, Admin admin, DisplayUtils display) {
+        display.printHeader("PATIENT SIGN UP");
+        System.out.println("Please fill in the following details to sign up. Note: Some fields are case-sensitive.\n");
+    
         System.out.print("Enter your name: ");
         this.name = scanner.nextLine();
-
+    
         System.out.print("Enter your password: ");
         this.password = scanner.nextLine();
+    
+        LocalDate dateOfBirth = null;
 
-        System.out.print("Enter your address: ");
-        this.address = scanner.nextLine();
+        while (dateOfBirth == null) {
+            try {
+                System.out.print("Enter Date of Birth (YYYY-MM-DD): ");
+                String input = scanner.nextLine();
+                dateOfBirth = LocalDate.parse(input);
 
-        System.out.print("Enter your birth date (YYYY-MM-DD): ");
-        this.bday = scanner.nextLine();
+                if (dateOfBirth.isAfter(LocalDate.now())) {
+                    System.out.println("Date of birth cannot be in the future. Please enter a valid date.");
+                    dateOfBirth = null; 
+                }
+            } catch (Exception e) {
+                System.out.println("Invalid date format. Please use YYYY-MM-DD.");
+            }
+        }
 
-        System.out.print("Enter your contact number: ");
-        this.contactNo = scanner.nextLine();
+        System.out.print("Enter your place of birth: ");
+        this.placeOfBirth = scanner.nextLine();
+
+        String genderInput = null;
+        while (genderInput == null){
+            try{
+                System.out.print("Enter your gender (Female/Male): ");
+                genderInput = scanner.nextLine().trim();
+
+                if (genderInput.equalsIgnoreCase("Female")) {
+                    this.gender = Gender.Female;
+                } else if (genderInput.equalsIgnoreCase("Male")) {
+                    this.gender = Gender.Male;
+                } else {
+                    System.out.println("Invalid gender. Please enter 'Female' or 'Male'.");
+                    genderInput = null;
+                }
+            }catch (Exception e) {
+                System.out.println("Invalid date format. Please use YYYY-MM-DD.");
+            }
+        }
 
         System.out.print("Enter your email: ");
         this.email = scanner.nextLine();
 
+        System.out.print("Enter your contact number: ");
+        this.contactNo = scanner.nextLine();
+
         System.out.print("Enter your emergency contact number: ");
         this.emergencyNo = scanner.nextLine();
+    
+        System.out.print("Enter your address: ");
+        this.address = scanner.nextLine();
+    
+        System.out.print("Enter your province: ");
+        this.province = scanner.nextLine();
+    
+        System.out.print("Enter your city: ");
+        this.city = scanner.nextLine();
 
-        System.out.print("Enter your gender (Female/Male): ");
-        String genderInput = scanner.nextLine().trim();
-        if (genderInput.equalsIgnoreCase("Female")) {
-            this.gender = Gender.Female;
-        } else if (genderInput.equalsIgnoreCase("Male")) {
-            this.gender = Gender.Male;
+        System.out.print("Enter your barangay: ");
+        this.barangay = scanner.nextLine();
+    
+        System.out.print("Enter your nationality: ");
+        this.nationality = scanner.nextLine();
+    
+        System.out.print("Enter your marital status: ");
+        this.maritalStatus = scanner.nextLine();
+    
+        System.out.print("Enter any allergies (N/A if none): ");
+        this.allergy = scanner.nextLine();
+    
+        System.out.print("Enter past surgeries or treatments (N/A if none): ");
+        this.past = scanner.nextLine();
+    
+        System.out.print("Enter your blood type: ");
+        this.bloodtype = scanner.nextLine();
+    
+        System.out.print("Are you vaccinated? (yes/no): ");
+        String vaccinatedInput = scanner.nextLine().trim();
+        if (vaccinatedInput.equalsIgnoreCase("yes")) {
+            isVaccinated = true;
+        } else if (vaccinatedInput.equalsIgnoreCase("no")) {
+            isVaccinated = false;
         } else {
-            System.out.println("Invalid gender. Please enter 'Female' or 'Male'.");
+            System.out.println("Invalid input for vaccination. Please answer 'yes' or 'no'.");
             return false;
         }
 
-        System.out.print("Enter any allergies (N/A if none): ");
-        this.allergy = scanner.nextLine();
+        System.out.print("Do you have a disability? (Yes/No): ");
+        String disabilityResponse = scanner.nextLine();
 
-        System.out.print("Enter past surgeries or treatments(N/A if none): ");
-        this.past = scanner.nextLine();
-
-        System.out.print("Enter your blood type: ");
-        this.bloodtype = scanner.nextLine();
-
-        if (name.isEmpty() || password.isEmpty() || contactNo.isEmpty() || email.isEmpty() ||
-        address.isEmpty() || bday.isEmpty() || emergencyNo.isEmpty() || allergy.isEmpty() ||
-        bloodtype.isEmpty() || past.isEmpty()) {
-        System.out.println("Required fields are missing.");
-        return false;
+        if (disabilityResponse.equalsIgnoreCase("Yes")) {
+            hasDisability = true;
+            System.out.print("Please enter your disability details: ");
+            disabilityDetails = scanner.nextLine();
+        } else {
+            hasDisability = false;
+            disabilityDetails = "None"; 
         }
 
-        patientDatabase.addPatient(this);
-        return true;
-    }
+        if (name.isEmpty() || password.isEmpty() || address.isEmpty() ||  contactNo.isEmpty() ||
+            email.isEmpty() || emergencyNo.isEmpty() || allergy.isEmpty() || bloodtype.isEmpty() || past.isEmpty() ||
+            province.isEmpty() || barangay.isEmpty() || placeOfBirth.isEmpty() || nationality.isEmpty() ||
+            maritalStatus.isEmpty()) {
+            System.out.println("Required fields are missing.");
+            return false;
+        }
+    
 
-    public static void signIn(Scanner scanner, PatientDatabase patientDatabase, Admin admin, Doctor doctor) {
-        System.out.println("Sign-In:");
+        this.patientId = generateUniqueId(patientDatabase);
+        patientDatabase.addPatient(this);
+        System.out.println("Sign-up successful! Your Patient ID is: " + getUniqueId());
+        return true;
+        }
+
+    
+
+
+    public static void signIn(Scanner scanner, PatientDatabase patientDatabase, Admin admin, Doctor doctor, DisplayUtils display) {
+        display.printHeader("PATIENT SIGN IN");
         System.out.print("Enter your full name (Note: this is case sensitive): ");
         String inputName = scanner.nextLine();
 
         System.out.print("Enter your password: ");
         String inputPassword = scanner.nextLine();
 
-        // Find the patient in the database
         Patient foundPatient = patientDatabase.findPatient(inputName, inputPassword);
 
         if (foundPatient != null && foundPatient.getPassword().equals(inputPassword)) {
             System.out.println("Sign-in successful. Welcome, " + foundPatient.getName() + "!");
-            foundPatient.showUserOptions(scanner, admin, doctor);
+            foundPatient.showUserOptions(scanner, admin, doctor, display);
         } else {
             System.out.println("Sign-in failed. Patient not found or invalid password.");
         }
     }
 
-    public void showUserOptions(Scanner scanner, Admin admin, Doctor doctor) {
+    public void showUserOptions(Scanner scanner, Admin admin, Doctor doctor, DisplayUtils display) {
        boolean exit = false;
 
         while (!exit){
-            System.out.println("\nPatient Menu");
+            display.printHeader("PATIENT MENU");
             System.out.println("1. Book an appointment");
             System.out.println("2. View medical history");
             System.out.println("3. Entered Patient Info");
@@ -197,19 +311,19 @@ public class Patient extends User {
 
             switch (choice) {
                 case 1:
-                    bookAppointment(admin, scanner, doctor);
+                    bookAppointment(admin, scanner, doctor, display);
                     break;
                 case 2:
-                    viewMedicalHistory();
+                    viewMedicalHistory(display);
                     break;
                 case 3:
-                    displayPatientInfo();
+                    displayPatientInfo(display);
                     break;
                 case 4: 
-                    viewPatientAppointments();
+                    viewPatientAppointments(display);
                     break;
                 case 5:
-                    viewCancelledAppointments();
+                    viewCancelledAppointments(display);
                     break;
                 case 6:
                     exit = true;
@@ -225,7 +339,8 @@ public class Patient extends User {
     }
 }
 
-    public void bookAppointment(Admin admin, Scanner scanner, Doctor doctor) {
+    public void bookAppointment(Admin admin, Scanner scanner, Doctor doctor, DisplayUtils display) {
+        display.printHeader("SCHEDULE AN APPOINTMENT");
         List<String> departments = admin.getDepartments();
         if (appointments == null) {
             appointments = new ArrayList<>(); 
@@ -335,45 +450,61 @@ public class Patient extends User {
         return availableDoctors; 
     }
 
-    public void viewMedicalHistory() {
+    public void viewMedicalHistory(DisplayUtils display) {
+        display.printHeader("MEDICAL HISTORY RECORDS");
         if (historyRecords != null && !historyRecords.isEmpty()) {
-            System.out.println("Your Medical History:");
             for (PatientHistory record : historyRecords) {
-                System.out.println(record.toString());   // Alternatively, just System.out.println(record);
-            }
+                System.out.println(record.toString());
+                System.out.println("---------------------------------------------------------------------------------------------");  
+            }                         
         } else {
             System.out.println("No medical history records found.");
         }
     }
     
     
-    public void displayPatientInfo() {
-        System.out.println("Patient Information:");
-        System.out.println("----------------------");
+    public void displayPatientInfo(DisplayUtils display) {
+        display.printHeader("PATIENT INFORMATION");
+        System.out.printf("%-30s %-30s\n", "Id: ", patientId);
         System.out.printf("%-30s %-30s\n", "Name:", name);
+        System.out.printf("%-30s %-30s\n", "Birthday:", bday);
+        System.out.printf("%-30s %-30s\n", "Place of Birth:", placeOfBirth);
+        System.out.printf("%-30s %-30s\n", "Gender:", gender);
         System.out.printf("%-30s %-30s\n", "Email:", email);
         System.out.printf("%-30s %-30s\n", "Contact Number:", contactNo);
-        System.out.printf("%-30s %-30s\n", "Address:", address);
-        System.out.printf("%-30s %-30s\n", "Birthday:", bday);
         System.out.printf("%-30s %-30s\n", "Emergency Contact:", emergencyNo);
-        System.out.printf("%-30s %-30s\n", "Gender:", gender);
+        System.out.printf("%-30s %-30s\n", "Address:", address);
+        System.out.printf("%-30s %-30s\n", "Province:", province);
+        System.out.printf("%-30s %-30s\n", "City:", city);
+        System.out.printf("%-30s %-30s\n", "Barangay:", barangay);
+        System.out.printf("%-30s %-30s\n", "Nationality:", nationality);
+        System.out.printf("%-30s %-30s\n", "Marital Status:", maritalStatus);
         System.out.printf("%-30s %-30s\n", "Allergies:", allergy);
         System.out.printf("%-30s %-30s\n", "Past Surgeries/Treatments:", past);
         System.out.printf("%-30s %-30s\n", "Blood Type:", bloodtype);
+        System.out.printf("%-30s %-30s\n", "Already vaccinated:", isVaccinated ? "Yes" : "No");
+        if (hasDisability) {
+            System.out.printf("%-30s %-30s\n", "Disability/disabilities:", "Yes");
+            System.out.printf("%-30s %-30s\n", "Disability Details:", disabilityDetails);
+        } else {
+            System.out.printf("%-30s %-30s\n", "Disability/disabilities:", "None");
+        }
     }
     
     
-    public void viewPatientAppointments() {
-        List<PatientHistory> appointments = getAppointments(); // Retrieve the patient's appointments
+    
+    public void viewPatientAppointments(DisplayUtils display) {
+        display.printHeader("SCHEDULED APPOINTMENTS");
+        List<PatientHistory> appointments = getAppointments(); 
     
         if (appointments == null || appointments.isEmpty()) {
             System.out.println("You have no scheduled appointments.");
             return;
         }
-        
+
         System.out.println("Scheduled appointments for " + getName() + ":");
         for (PatientHistory appointment : appointments) {
-            if (!appointment.isCancelled()) { // Skip canceled appointments
+            if (!appointment.isCancelled()) { 
                 System.out.println("-------------------------------------------------");
                 System.out.println(appointment.toStringForAppointment(true));
                 System.out.println("-------------------------------------------------");
@@ -381,24 +512,26 @@ public class Patient extends User {
         }
     }
     
-    public void viewCancelledAppointments() {
+    public void viewCancelledAppointments(DisplayUtils display) {
+        display.printHeader("CANCELLED APPOINTMENTS");
         if (cancelledAppointments == null || cancelledAppointments.isEmpty()) {
             System.out.println("No cancelled appointments.");
             return;
         }
-    
-        System.out.println("Cancelled Appointments:");
+        
         for (PatientHistory history : cancelledAppointments) {
             System.out.println("Date: " + history.getVisitDate() +
-                               ", Reason: " + history.getCancellationReason());
+                               "\nDoctor: Dr. " + history.getDoctorName() +
+                               "\nReason: " + history.getCancellationReason());
+            System.out.println("------------------------------------------------------------------------------------------");
         }
     }
 
-    public static void patientMenu(Scanner scanner, PatientDatabase patientDatabase, Admin admin, Doctor doctor) {
+    public static void patientMenu(Scanner scanner, PatientDatabase patientDatabase, Admin admin, Doctor doctor, DisplayUtils display) {
         boolean exit = false;
     
         while (!exit) {
-            System.out.println("\nPatient Menu");
+            display.printHeader("WELCOME TO PATIENT PORTAL");
             System.out.println("1. Signup");
             System.out.println("2. Sign in");
             System.out.println("3. Exit");
@@ -411,7 +544,7 @@ public class Patient extends User {
                 switch (choice) {
                     case 1:
                         Patient newPatient = new Patient("", ""); // Create a new Patient with empty name and password
-                        boolean success = newPatient.signup(scanner, patientDatabase);
+                        boolean success = newPatient.signup(scanner, patientDatabase, admin, display);
                         if (success) {
                             System.out.println("Patient signed up successfully.");
                         } else {
@@ -419,7 +552,7 @@ public class Patient extends User {
                         }
                         break;
                     case 2:
-                        Patient.signIn(scanner, patientDatabase, admin, doctor);
+                        Patient.signIn(scanner, patientDatabase, admin, doctor, display);
                         break;
                     case 3:
                         System.out.println("Exiting...");
@@ -435,6 +568,6 @@ public class Patient extends User {
         }
     }
 }
-    
+
 
 
