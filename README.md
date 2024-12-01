@@ -22,6 +22,15 @@ Built using Object-Oriented Programming (OOP) principles, **WellCare** offers an
 
 🛠️ **Admin Features**: Admins have full control over the system, including the ability to add or remove doctors and departments. This feature helps manage and update the hospital booking system as needed.
 
+🍏 **Health Tips Section**: A dedicated section of the system provides helpful health tips for all users, not just registered patients. These tips cover a variety of health-related topics, such as healthy eating and dietary recommendations. The system includes multiple categories such as:
+
+- **For Low Blood Pressure**
+- **For High Blood Pressure**
+- **For Weight Loss**
+- **For Boosting Immune System**
+
+Users can explore health tips and apply them to enhance their well-being.
+
 ## MySQL Integration 💾
 
 This project integrates a MySQL database to manage and store critical hospital booking system data. The integration ensures data persistence and efficient handling of:
@@ -34,16 +43,6 @@ This project integrates a MySQL database to manage and store critical hospital b
 - **Medical History**: Preserves patient medical histories, diagnoses, and treatments for seamless access.
 
 The MySQL integration ensures robust and secure data storage, supporting functionalities such as patient login, doctor schedule management, appointment booking, and medical history retrieval.
-
-
-🍏 **Health Tips Section**: A dedicated section of the system provides helpful health tips for all users, not just registered patients. These tips cover a variety of health-related topics, such as healthy eating and dietary recommendations. The system includes multiple categories such as:
-
-- **For Low Blood Pressure**
-- **For High Blood Pressure**
-- **For Weight Loss**
-- **For Boosting Immune System**
-
-Users can explore health tips and apply them to enhance their well-being.
 
 ---
 
@@ -168,6 +167,55 @@ By integrating these features, the project aligns with SDG 3 by making healthcar
      ```bash
      java main.Main
      ```
+
+## Project File Structure 📁
+
+Here is the structure of the project:
+
+```
+├── sql/                           # SQL files
+│   └── WellCare.sql               # SQL schema file
+├── src/                           # Java source files
+│   ├── Main/                      # Main application classes
+│   │   └── Main.java
+│   ├── admin/                     # Admin-related classes
+│   │   └── Admin.java
+│   ├── connection/                # Database connection and DAOs
+│   │   ├── AdminDao.java
+│   │   ├── AdminDaoJdbc.java
+│   │   ├── AppointmentDAO.java
+│   │   ├── AppointmentDaoJdbc.java
+│   │   ├── DatabaseConnection.java
+│   │   ├── DoctorDao.java
+│   │   ├── DoctorDaoJdbc.java
+│   │   ├── PatientDao.java
+│   │   └── PatientDaoJdbc.java
+│   ├── display/                   # Display-related classes
+│   │   ├── AppointmentTableDisplay.java
+│   │   ├── CanceledAppointmentTableDisplay.java
+│   │   ├── DisplayUtils.java
+│   │   ├── DoctorScheduleTableDisplay.java
+│   │   ├── MedicalHistoryTableDisplay.java
+│   │   └── TableDisplay.java
+│   ├── healthtips/                # Health tips-related classes
+│   │   ├── BoostImmunityTips.java
+│   │   ├── DietingTips.java
+│   │   ├── HealthTips.java
+│   │   ├── HighBloodTips.java
+│   │   └── LowBloodTips.java
+│   ├── model/                     # Core model classes (e.g., Appointment, Patient)
+│   │   ├── Appointment.java
+│   │   ├── AvailableTime.java
+│   │   ├── CanceledAppointment.java
+│   │   ├── MedicalHistory.java
+│   │   └── Patient.java
+│   ├── panel/                     # Panels for user interfaces
+│   │   ├── DoctorPanel.java
+│   │   └── PatientPanel.java
+│   └── user/                      # User-related classes
+│       └── User.java
+└── README.md                      # Project documentation
+```
 
 
 
