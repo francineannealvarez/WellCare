@@ -120,8 +120,20 @@ By integrating these features, the project aligns with SDG 3 by making healthcar
   - Import the provided SQL schema file (e.g., hospital_system.sql) into your MySQL database using MySQL Workbench or another MySQL client.
   - Open MySQL Workbench and connect to your MySQL server.
   - Open the SQL script and run it to create the necessary tables.
-    
-4. **⚙️ Update Database Configuration:**
+
+4. **⚙️ Download and Set Up MySQL Connector:**
+
+  - Download the MySQL Connector JAR file, which is required to connect the Java program to your MySQL database.
+  - You can download it from [here](https://dev.mysql.com/downloads/connector/j/).
+  - Once downloaded, **place the `mysql-connector-j-9.1.0.jar` file in the `lib/` folder** of your project directory.
+
+   Example directory structure:
+   ```
+  ├── lib/                           # Library files
+  │   └── mysql-connector-j-9.1.0.jar # MySQL Connector JAR file
+  ```
+
+5. **⚙️ Update Database Configuration:**
    - Open the `DatabaseConnection` class in your codebase.
    - Replace the placeholder values with your MySQL credentials.
    
@@ -132,17 +144,17 @@ By integrating these features, the project aligns with SDG 3 by making healthcar
      String password = "your_password";
      ```
 
-5. **🖥️ Install JDK:**
+6. **🖥️ Install JDK:**
    - Download and install [JDK (Java Development Kit)](https://www.oracle.com/java/technologies/javase-jdk11-downloads.html).
    - Make sure Java is properly installed by running the following command in your terminal:
      ```bash
      java -version
      ```
      
-6. **🔧 Install Visual Studio Code (VS Code):**
+7. **🔧 Install Visual Studio Code (VS Code):**
    - Download and install [Visual Studio Code](https://code.visualstudio.com/).
 
-7. **⚙️ Install Java Extension Pack for VS Code:**
+8. **⚙️ Install Java Extension Pack for VS Code:**
    - Open Visual Studio Code.
    - Go to Extensions (Ctrl+Shift+X) and search for "Java Extension Pack" by Microsoft. Install it to enable Java support.
 
@@ -153,26 +165,24 @@ By integrating these features, the project aligns with SDG 3 by making healthcar
 
 2. **Compile the Program:**
    - Open the integrated terminal in Visual Studio Code (Ctrl + `).
-   - Navigate to the `src` directory where the source files are located:
+   - In the root directory of the project, compile the program with the MySQL Connector JAR in the classpath:
      ```bash
-     cd src
-     ```
-   - Compile the main program:
-     ```bash
-     javac main/Main.java
+     javac -d out -cp lib/mysql-connector-java-9.1.0.jar $(find src -name "*.java")
      ```
 
 3. **Run the Program:**
-   - Run the program with the following command:
+   - After successful compilation, run the program using the following command:
      ```bash
-     java main.Main
+     java -cp out:lib/mysql-connector-java-9.1.0.jar main.Main
      ```
-
+---
 ## Project File Structure 📁
 
 Here is the structure of the project:
 
 ```
+├── lib/                           # Library files
+│   └── mysql-connector-j-9.1.0.jar # MySQL Connector JAR file
 ├── sql/                           # SQL files
 │   └── WellCare.sql               # SQL schema file
 ├── src/                           # Java source files
