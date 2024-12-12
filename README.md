@@ -181,10 +181,10 @@ By integrating these features, the project aligns with SDG 3 by making healthcar
 Here is the structure of the project:
 
 ```
-├── lib/                           # Library files
-│   └── mysql-connector-j-9.1.0.jar # MySQL Connector JAR file
 ├── db/                             # SQL files
 │   ├── init.sql                   # SQL schema file
+├── lib/                           # Library files
+│   └── mysql-connector-j-9.1.0.jar # MySQL Connector JAR file
 │   └── schema.png 
 ├── src/                           # Java source files
 │   ├── Main/                      # Main application classes
