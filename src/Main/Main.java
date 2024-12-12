@@ -2,13 +2,13 @@ import java.sql.Connection;
 import java.util.InputMismatchException;
 import java.util.Scanner;
 import panel.PatientPanel;
-import admin.Admin; 
+import admin.Admin;
+import dao.AdminDao;
+import dao.AdminDaoJdbc;
+import connection.DatabaseConnection;
 import panel.DoctorPanel;
 import healthtips.HealthTips;
 import display.DisplayUtils;
-import connection.AdminDao;
-import connection.AdminDaoJdbc;
-import connection.DatabaseConnection;
 import model.Patient;
 import model.Doctor;
 
@@ -22,23 +22,23 @@ public class Main {
         try (Connection connection = DatabaseConnection.getConnection()) {
             AdminDao adminDao = new AdminDaoJdbc(connection);
             DoctorPanel doctorPanel = new DoctorPanel(doctor, connection);
-            PatientPanel patientPanel = new PatientPanel(patient, connection);
-
+            PatientPanel patientPanel = new PatientPanel( patient, connection);
             Admin admin = new Admin("admin", "adminpass", adminDao, display);
             
             boolean exit = false;
-            try {
-                while (!exit) {
-                    display.printHeader("Welcome to the Hospital Booking System!");
-                    System.out.println("1. Patient Menu");
-                    System.out.println("2. Doctor");
-                    System.out.println("3. Admin");
-                    System.out.println("4. Health Tips");
-                    System.out.println("5. Exit");
-                    System.out.print("Choose an option: ");
-                    int choice = scanner.nextInt(); 
-                    scanner.nextLine(); 
-                
+            while (!exit) {
+                display.printHeader("Welcome to the Hospital Booking System!");
+                System.out.println("1. Patient Menu");
+                System.out.println("2. Doctor");
+                System.out.println("3. Admin");
+                System.out.println("4. Health Tips");
+                System.out.println("5. Exit");
+                System.out.print("Choose an option: ");
+        
+                try {
+                    int choice = scanner.nextInt();
+                    scanner.nextLine();  
+        
                     switch (choice) {
                         case 1 -> patientPanel.patientMenu(scanner); 
                         case 2 -> doctorPanel.signIn(scanner, admin); 
@@ -56,11 +56,11 @@ public class Main {
                         }
                         default -> System.out.println("Invalid option. Please try again.");
                     }
+                } catch (InputMismatchException e) {
+                    System.out.println("Invalid input. Please enter a valid number.");
+                    scanner.nextLine(); 
                 }
-             } catch (InputMismatchException e) {
-                System.out.println("Please enter a valid number.");
-                scanner.nextLine(); 
-            }   
+            }
         } catch (Exception e) {
             e.printStackTrace();
             System.out.println("Error occurred while connecting to the database.");

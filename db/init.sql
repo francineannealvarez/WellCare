@@ -4,7 +4,7 @@ USE mysql_oop;
 -- Patient Table
 CREATE TABLE patient (
     Patient_ID VARCHAR(50) PRIMARY KEY,
-    Patient_Name VARCHAR(255),
+    Patient_Name VARCHAR(255) NOT NULL,
     Password VARCHAR(255),
     Birthdate DATE,
     Place_of_Birth VARCHAR(255),
@@ -26,19 +26,20 @@ CREATE TABLE patient (
     Disability_Details VARCHAR(255)
 );
 
+-- Department Table
+CREATE TABLE department (
+    Department_ID INT AUTO_INCREMENT PRIMARY KEY,
+    Department_Name VARCHAR(255) NOT NULL UNIQUE,
+    is_active TINYINT(1) DEFAULT 1 
+);
+
 -- Doctor Table
 CREATE TABLE doctor (
     Doctor_ID VARCHAR(50) PRIMARY KEY,
     Doctor_Name VARCHAR(255) NOT NULL,
     Department_ID INT,
-    FOREIGN KEY (Department_ID) REFERENCES department(Department_ID) ON DELETE SET NULL
-);
-
--- Department Table
-CREATE TABLE department (
-    Department_ID INT AUTO_INCREMENT PRIMARY KEY,
-    Department_Name VARCHAR(255) NOT NULL,
-    is_active TINYINT(1) DEFAULT 1 -- 1 for active, 0 for inactive
+    employment_status VARCHAR(20) DEFAULT 'active',
+    FOREIGN KEY (Department_ID) REFERENCES department (Department_ID) ON DELETE SET NULL
 );
 
 -- Available Time Slot of Doctor Table
@@ -59,7 +60,7 @@ CREATE TABLE appointments (
     Appointment_Time VARCHAR(255) NOT NULL,
     Medical_Condition VARCHAR(255),
     Diagnosis VARCHAR(255) DEFAULT 'pending',
-    Status ENUM('Scheduled', 'Completed', 'Canceled') DEFAULT 'scheduled', -- ENUM for controlled statuses
+    Status ENUM('Scheduled', 'Completed', 'Canceled') DEFAULT 'Scheduled', -- ENUM for controlled statuses
     FOREIGN KEY (Doctor_ID) REFERENCES doctor(Doctor_ID),
     FOREIGN KEY (Patient_ID) REFERENCES patient(Patient_ID),
     FOREIGN KEY (Department_ID) REFERENCES department(Department_ID)
@@ -95,16 +96,31 @@ CREATE TABLE medical_history (
 );
 
 -- Add Departments into Departments Table
-INSERT INTO department (Department_Name, is_active) VALUES 
+INSERT IGNORE INTO department (Department_Name, is_active) VALUES 
 ('Cardiology', 1),
 ('Neurology', 1),
 ('Pediatrics', 1);
 
--- SELECT * FROM patient;
--- SELECT * FROM doctor;
--- SELECT * FROM department;
--- SELECT * FROM available_times;
--- SELECT * FROM appointments;
--- SELECT * FROM canceled_appointments;
--- SELECT * FROM medical_history;
+-- Show all the tables in the current database
+-- SHOW TABLES;
 
+-- Select all data from the patient table
+-- SELECT * FROM patient;
+
+-- Select all data from the department table
+-- SELECT * FROM department;
+
+-- Select all data from the doctor table
+-- SELECT * FROM doctor;
+
+-- Select all data from the available_times table
+-- SELECT * FROM available_times;
+
+-- Select all data from the appointments table
+-- SELECT * FROM appointments;
+
+-- Select all data from the canceled_appointments table
+-- SELECT * FROM canceled_appointments;
+
+-- Select all data from the medical_history table
+-- SELECT * FROM medical_history;

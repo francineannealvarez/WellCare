@@ -1,10 +1,9 @@
-package connection;
+package dao;
 
 import java.sql.*;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
-
 import model.CanceledAppointment;
 import model.MedicalHistory;
 import model.Patient;
@@ -46,6 +45,7 @@ public class PatientDaoJdbc implements PatientDao {
             stmt.setString(21, patient.getDisabilityDetails());
 
             stmt.executeUpdate();
+            System.out.println("Sign-up successful! Your Patient ID is: " + generatedId);
         }
     }
 

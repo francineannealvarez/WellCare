@@ -183,19 +183,21 @@ Here is the structure of the project:
 ```
 ├── lib/                           # Library files
 │   └── mysql-connector-j-9.1.0.jar # MySQL Connector JAR file
-├── sql/                           # SQL files
-│   └── WellCare.sql               # SQL schema file
+├── db/                             # SQL files
+│   ├── init.sql                   # SQL schema file
+│   └── schema.png 
 ├── src/                           # Java source files
 │   ├── Main/                      # Main application classes
 │   │   └── Main.java
 │   ├── admin/                     # Admin-related classes
 │   │   └── Admin.java
-│   ├── connection/                # Database connection and DAOs
+│   ├── connection/                # Database Connection class
+│   │   └── DatabaseConnection.java
+│   ├── dao/                        # Dao and DaoJdbc classes
 │   │   ├── AdminDao.java
 │   │   ├── AdminDaoJdbc.java
 │   │   ├── AppointmentDAO.java
 │   │   ├── AppointmentDaoJdbc.java
-│   │   ├── DatabaseConnection.java
 │   │   ├── DoctorDao.java
 │   │   ├── DoctorDaoJdbc.java
 │   │   ├── PatientDao.java

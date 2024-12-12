@@ -1,4 +1,4 @@
-package connection;
+package dao;
 
 import java.sql.*;
 import java.util.ArrayList;
@@ -12,12 +12,11 @@ public class AdminDaoJdbc implements AdminDao {
     }
 
     public void addDoctor(String doctorName, String deptName) throws SQLException {
-        // Check if the connection is valid
         if (connection == null) {
             System.out.println("Database connection is null.");
             return;
         }
-
+    
         if (!departmentExists(deptName)) {
             System.out.println("Department " + deptName + " does not exist. Cannot add doctor.");
             return; 
@@ -31,13 +30,14 @@ public class AdminDaoJdbc implements AdminDao {
         }
     
         String doctorId = generateUniqueId();
-        String query = "INSERT INTO doctor (Doctor_ID, Doctor_Name, Department_ID) VALUES (?, ?, ?)";
+        String query = "INSERT INTO doctor (Doctor_ID, Doctor_Name, Department_ID, employment_status) VALUES (?, ?, ?, ?)";
     
         try (PreparedStatement stmt = connection.prepareStatement(query)) {
             stmt.setString(1, doctorId); 
             stmt.setString(2, doctorName);
-            stmt.setInt(3, departmentId); 
-
+            stmt.setInt(3, departmentId);
+            stmt.setString(4, "active"); 
+    
             int rowsAffected = stmt.executeUpdate(); 
             if (rowsAffected > 0) {
                 System.out.println("Doctor " + doctorName + " added successfully to the " + deptName + " department with ID: " + doctorId);
@@ -48,7 +48,7 @@ public class AdminDaoJdbc implements AdminDao {
     
         } catch (SQLException e) {
             System.out.println("Error while inserting doctor: " + e.getMessage());
-            e.printStackTrace();
+            //e.printStackTrace();
         }
     }
 
@@ -63,67 +63,105 @@ public class AdminDaoJdbc implements AdminDao {
             int count = rs.getInt(1); 
             return year + String.format("%05d", count + 1);
         } catch (SQLException e) {
-            e.printStackTrace();
+            System.out.println("Error: " + e.getMessage());
+            //e.printStackTrace();
         }
     
         return null; 
     }
         
     private void insertDefaultAvailableTimes(String doctorId) {
-        String query = "INSERT INTO available_times (Doctor_ID, Available_Time) VALUES (?, ?)";
-
-        try (PreparedStatement stmt = connection.prepareStatement(query)) {
-            String[] defaultTimes = {
-                "2024-12-24 10:00 AM",
-                "2024-12-24 02:00 PM",
-                "2024-12-25 10:00 AM",
-                "2024-12-25 02:00 PM"
-            };
-
-            for (String time : defaultTimes) {
-                stmt.setString(1, doctorId); 
-                stmt.setString(2, time);  
-                stmt.executeUpdate();  
+        String checkQuery = "SELECT COUNT(*) FROM available_times WHERE Doctor_ID = ?";
+        
+        try (PreparedStatement checkStmt = connection.prepareStatement(checkQuery)) {
+            checkStmt.setString(1, doctorId);
+            ResultSet rs = checkStmt.executeQuery();
+            rs.next();
+            int count = rs.getInt(1); 
+    
+            if (count == 0) {  
+                String query = "INSERT INTO available_times (Doctor_ID, Available_Time) VALUES (?, ?)";
+                try (PreparedStatement stmt = connection.prepareStatement(query)) {
+                    String[] defaultTimes = {
+                        "2024-12-24 10:00 AM",
+                        "2024-12-24 02:00 PM",
+                        "2024-12-25 10:00 AM",
+                        "2024-12-25 02:00 PM"
+                    };
+    
+                    for (String time : defaultTimes) {
+                        stmt.setString(1, doctorId); 
+                        stmt.setString(2, time);  
+                        stmt.executeUpdate();  
+                    }
+                    //System.out.println("Default available times inserted for doctor with ID: " + doctorId); for debugging
+                }
+            } else {
+                System.out.println("Doctor already has available times. Skipping insertion.");
             }
-
-            //System.out.println("Default available times inserted for doctor with ID: " + doctorId);(for debugging)
         } catch (SQLException e) {
-            System.out.println("Error while inserting default available times: " + e.getMessage());
-            e.printStackTrace();
+            System.out.println("Error while checking or inserting available times: " + e.getMessage());
         }
     }
-
+    
     @Override
     public boolean removeDoctor(int doctorID) {
         if (!doctorExists(doctorID)) {
             System.out.println("Doctor with ID " + doctorID + " does not exist.");
             return false;
         }
-        String query = "DELETE FROM doctor WHERE Doctor_ID = ?";
 
-        try (PreparedStatement stmt = connection.prepareStatement(query)) {
-            stmt.setInt(1, doctorID);
+        String updateDoctorQuery = "UPDATE doctor SET employment_status = 'no_longer_employed' WHERE Doctor_ID = ?";
+        String cancelAppointmentsQuery = "UPDATE appointments SET Status = 'CANCELED' WHERE Doctor_ID = ?";
+        String moveToCancelledAppointmentsQuery = "INSERT INTO canceled_appointments (Appointment_ID, Doctor_ID, Patient_ID, Department_ID, Cancel_Reason) " +
+                                                "SELECT Appointment_ID, Doctor_ID, Patient_ID, Department_ID, 'Doctor is no longer employed.' " +
+                                                "FROM appointments WHERE Doctor_ID = ? AND Status = 'CANCELED'";
 
-            int rowsAffected = stmt.executeUpdate();
-            return rowsAffected > 0;
+        try (PreparedStatement updateDoctorStmt = connection.prepareStatement(updateDoctorQuery);
+            PreparedStatement cancelAppointmentsStmt = connection.prepareStatement(cancelAppointmentsQuery);
+            PreparedStatement moveToCancelledAppointmentsStmt = connection.prepareStatement(moveToCancelledAppointmentsQuery)) {
+
+            // Update doctor status to 'no_longer_employed'
+            updateDoctorStmt.setInt(1, doctorID);
+            int doctorRowsAffected = updateDoctorStmt.executeUpdate();
+
+            if (doctorRowsAffected > 0) {
+                // Cancel all appointments for the doctor
+                cancelAppointmentsStmt.setInt(1, doctorID);
+                int appointmentRowsAffected = cancelAppointmentsStmt.executeUpdate();
+
+                if (appointmentRowsAffected > 0) {
+                    // Move canceled appointments to the cancelled_appointments table
+                    moveToCancelledAppointmentsStmt.setInt(1, doctorID);
+                    int cancelledRowsInserted = moveToCancelledAppointmentsStmt.executeUpdate();
+
+                    System.out.println("Doctor with ID " + doctorID + " has been removed, " + appointmentRowsAffected +
+                                    " appointments were cancelled, and " + cancelledRowsInserted + " were logged in cancelled_appointments.");
+                } else {
+                    System.out.println("Doctor with ID " + doctorID + " has been removed, but no appointments were found to cancel.");
+                }
+                return true;
+            } else {
+                System.out.println("Failed to update doctor status. No rows affected.");
+                return false;
+            }
 
         } catch (SQLException e) {
-            System.out.println("Error while removing doctor: " + e.getMessage());
-            e.printStackTrace();
-            return false; 
+            System.out.println("Error while updating doctor status or cancelling appointments: " + e.getMessage());
+            return false;
         }
     }
 
     @Override
     public boolean doctorExists(int doctorId) {
-        String query = "SELECT COUNT(*) FROM doctor WHERE Doctor_ID = ?";
+        String query = "SELECT COUNT(*) FROM doctor WHERE Doctor_ID = ? AND employment_status = 'active'";
         try (PreparedStatement stmt = connection.prepareStatement(query)) {
             stmt.setInt(1, doctorId);
             ResultSet rs = stmt.executeQuery();
             return rs.next() && rs.getInt(1) > 0;  
         } catch (SQLException e) {
             System.out.println("Error checking doctor existence: " + e.getMessage());
-            e.printStackTrace();
+            //e.printStackTrace();
         }
         return false; 
     }
@@ -142,7 +180,8 @@ public class AdminDaoJdbc implements AdminDao {
                 stmt.executeUpdate();
                 //System.out.println("Department '" + departmentName + "' reactivated successfully."); (for debugging)
             } catch (SQLException e) {
-                e.printStackTrace();
+                System.out.println("Error: " + e.getMessage());
+                //e.printStackTrace();
             }
             return;
         }
@@ -153,7 +192,8 @@ public class AdminDaoJdbc implements AdminDao {
             stmt.executeUpdate();
             System.out.println("Department added successfully.");
         } catch (SQLException e) {
-            e.printStackTrace();
+            System.out.println("Error: " + e.getMessage());
+            //e.printStackTrace();
         }
     }
 
@@ -171,7 +211,8 @@ public class AdminDaoJdbc implements AdminDao {
         } catch (SQLSyntaxErrorException e) {
             System.err.println("Table 'department' does not exist. Please initialize the database properly.");
         } catch (SQLException e) {
-            e.printStackTrace();
+            System.out.println("Error: " + e.getMessage());
+            //e.printStackTrace();
         }
         return false;
     }
@@ -187,7 +228,8 @@ public class AdminDaoJdbc implements AdminDao {
         } catch (SQLSyntaxErrorException e) {
             System.err.println("Table 'department' does not exist. Please initialize the database properly.");
         } catch (SQLException e) {
-            e.printStackTrace();
+            System.out.println("Error: " + e.getMessage());
+            //e.printStackTrace();
         }
         return false;
     }
@@ -211,7 +253,7 @@ public class AdminDaoJdbc implements AdminDao {
             }
         } catch (SQLException e) {
             System.out.println("Error while marking department as inactive: " + e.getMessage());
-            e.printStackTrace();
+            //e.printStackTrace();
         }
     }
 
@@ -221,7 +263,7 @@ public class AdminDaoJdbc implements AdminDao {
         String query = "SELECT doctor.Doctor_ID, doctor.Doctor_Name, department.Department_ID, department.Department_Name " +
                     "FROM doctor " +
                     "JOIN department ON doctor.Department_ID = department.Department_ID " +
-                    "WHERE department.is_active = 1"; 
+                    "WHERE department.is_active = 1 AND doctor.employment_status = 'active'";
 
         try (PreparedStatement stmt = connection.prepareStatement(query)) {
             ResultSet resultSet = stmt.executeQuery();
@@ -233,7 +275,8 @@ public class AdminDaoJdbc implements AdminDao {
                 doctorsWithDepartments.add(doctorInfo);
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            System.out.println("Error: " + e.getMessage());
+            //e.printStackTrace();
         }
         return doctorsWithDepartments;
     }
@@ -251,11 +294,13 @@ public class AdminDaoJdbc implements AdminDao {
                 departments.add(departmentInfo);
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            System.out.println("Error: " + e.getMessage());
+            //e.printStackTrace();
         }
         return departments;
     }
 
+    @Override
     public int getDepartmentIdById(int departmentId) {
         String sql = "SELECT Department_ID FROM department WHERE Department_ID = ?";
         try (PreparedStatement stmt = connection.prepareStatement(sql)) {
@@ -266,11 +311,13 @@ public class AdminDaoJdbc implements AdminDao {
                 }
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            System.out.println("Error: " + e.getMessage());
+            //e.printStackTrace();
         }
         return -1;
     }
 
+    @Override
     public int getDepartmentIdByName(String deptName) {
         //System.out.println("Fetching Department ID for: " + deptName); (for debugging)
 
@@ -283,7 +330,8 @@ public class AdminDaoJdbc implements AdminDao {
                 }
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            System.out.println("Error: " + e.getMessage());
+            //e.printStackTrace();
         }
         return -1; 
     }

@@ -32,7 +32,7 @@ public abstract class HealthTips {
             System.out.println("4. For Boosting Immune System");
             System.out.println("5. Exit");
 
-            System.out.print("Please select a category (1-3): ");
+            System.out.print("Please select a category (1-4): ");
             
             try {
                 int choice = scanner.nextInt();

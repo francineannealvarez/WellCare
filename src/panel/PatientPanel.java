@@ -6,6 +6,15 @@ import java.time.LocalDate;
 import java.util.InputMismatchException;
 import java.util.List;
 import java.util.Scanner;
+
+import dao.AdminDao;
+import dao.AdminDaoJdbc;
+import dao.AppointmentDAO;
+import dao.AppointmentDaoJdbc;
+import dao.DoctorDao;
+import dao.DoctorDaoJdbc;
+import dao.PatientDao;
+import dao.PatientDaoJdbc;
 import model.Doctor;
 import model.Appointment;
 import model.AvailableTime;
@@ -13,18 +22,10 @@ import model.CanceledAppointment;
 import model.MedicalHistory;
 import model.Patient;
 import model.Patient.Gender;
-import connection.DoctorDao;
-import connection.DoctorDaoJdbc;
-import connection.AdminDao;
-import connection.AdminDaoJdbc;
-import connection.PatientDao;
-import connection.PatientDaoJdbc;
 import display.CanceledAppointmentTableDisplay;
 import display.DisplayUtils;
 import display.DoctorScheduleTableDisplay;
 import display.MedicalHistoryTableDisplay;
-import connection.AppointmentDAO;
-import connection.AppointmentDaoJdbc;
 
 
 public class PatientPanel {
@@ -46,16 +47,18 @@ public class PatientPanel {
    
     public void patientMenu(Scanner scanner) throws SQLException {
         boolean exit = false;
-        try {
-            while (!exit) {
-                display.printHeader("WELCOME TO PATIENT PORTAL");
-                System.out.println("1. Signup");
-                System.out.println("2. Sign in");
-                System.out.println("3. Exit");
-                System.out.print("Please select an option by entering the corresponding number: ");
+    
+        while (!exit) {
+            display.printHeader("WELCOME TO PATIENT PORTAL");
+            System.out.println("1. Signup");
+            System.out.println("2. Sign in");
+            System.out.println("3. Exit");
+            System.out.print("Please select an option by entering the corresponding number: ");
+            
+            try {
                 int choice = scanner.nextInt();
-                scanner.nextLine(); 
-        
+                scanner.nextLine();  
+    
                 switch (choice) {
                     case 1 -> signup(scanner);
                     case 2 -> signIn(scanner);
@@ -64,14 +67,14 @@ public class PatientPanel {
                         exit = true;
                     }
                     default -> System.out.println("Invalid option. Please try again.");
-                }                
+                }
+            } catch (InputMismatchException e) {
+                System.out.println("Invalid input. Please enter a valid number.");
+                scanner.nextLine();  
             }
-        } catch (InputMismatchException e) {
-            System.out.println("Invalid input. Please enter a valid number.");
-            scanner.nextLine(); 
         }
     }
-
+    
     public  boolean signup(Scanner scanner) throws SQLException {
         display.printHeader("PATIENT SIGN UP");
         System.out.println("Please fill in the following details to sign up. Note: Some fields are case-sensitive.\n");
@@ -200,7 +203,6 @@ public class PatientPanel {
     
         try {
             patientDao.addPatient(newPatient);
-            System.out.println("Sign-up successful! Your Patient ID is: " + patientDao.generateUniqueId());
             return true;
         } catch (Exception e) {
             System.out.println("An error occurred while saving your details. Please try again.");
@@ -234,23 +236,21 @@ public class PatientPanel {
     
     public void showUserOptions(Scanner scanner) throws SQLException {
         boolean exit = false;
-        try {
-
-            while (!exit){
-                display.printHeader("PATIENT MENU");
-                System.out.println("1. Book an appointment");
-                System.out.println("2. View Scheduled Appointment");
-                System.out.println("3. View Cancelled Appointment");
-                System.out.println("4. View medical history");
-                System.out.println("5. Entered Patient Info");
-                System.out.println("6. Update Patient Info");
-                System.out.println("7. Log out");
-                System.out.print("Choose an option: ");
-                
-            
+        while (!exit) {
+            display.printHeader("PATIENT MENU");
+            System.out.println("1. Book an appointment");
+            System.out.println("2. View Scheduled Appointment");
+            System.out.println("3. View Cancelled Appointment");
+            System.out.println("4. View medical history");
+            System.out.println("5. Entered Patient Info");
+            System.out.println("6. Update Patient Info");
+            System.out.println("7. Log out");
+            System.out.print("Choose an option: ");
+    
+            try {
                 int choice = scanner.nextInt();
                 scanner.nextLine();  
-            
+    
                 switch (choice) {
                     case 1 -> bookAppointment(scanner);
                     case 2 -> viewPatientAppointments();
@@ -270,11 +270,11 @@ public class PatientPanel {
                     }
                     default -> System.out.println("Invalid option. Please try again.");
                 }
+            } catch (InputMismatchException e) {
+                System.out.println("Invalid input. Please enter a number between 1 and 7.");
+                scanner.nextLine();  
             }
-        } catch (InputMismatchException e) {
-                System.out.println("Invalid input. Please enter a number.");
-                scanner.nextLine(); 
-        }   
+        }
     }
     
     public void bookAppointment(Scanner scanner) {
@@ -287,7 +287,7 @@ public class PatientPanel {
                 System.out.println((i + 1) + ". " + departments.get(i));
             }
 
-            System.out.print("Select a department (1-" + departments.size() + "): ");
+            System.out.print("Select a department: ");
             int departmentChoice = scanner.nextInt();
             scanner.nextLine();
             if (departmentChoice < 1 || departmentChoice > departments.size()) {
@@ -345,7 +345,6 @@ public class PatientPanel {
             System.out.print("Describe your medical condition: ");
             String medicalCondition = scanner.nextLine();
     
-            System.out.println("name" + selectedDepartmentName);
             Appointment appointment = new Appointment(
                 0,
                 selectedDoctor.getDoctorId(),
@@ -360,16 +359,14 @@ public class PatientPanel {
             );
     
             apd.createAppointment(appointment, adminDao);
-            System.out.println("Appointment successfully booked!");
+            System.out.println("Appointment scheduled successfully!");
     
             apd.removeBookedTime(selectedAvailableTime.getAvailableTimeId());
-            System.out.println("The booked time has been removed from the available times.");
         } catch (Exception e) {
             System.out.println("Error occurred while booking appointment: " + e.getMessage());
             e.printStackTrace();
         }
     }
-
             
     public void viewPatientAppointments() {
         display.printHeader("SCHEDULED APPOINTMENTS");
@@ -479,6 +476,7 @@ public class PatientPanel {
         display.printHeader("UPDATE PATIENT INFORMATION");
 
         boolean exit = false;
+        boolean infoUpdated = false;
         Patient patient = patientDao.getPatientDetails(loggedInPatient.getUniqueId());
         while (!exit) {
             System.out.println("\nYour Current Information:");
@@ -511,91 +509,173 @@ public class PatientPanel {
             switch (choice) {
                 case 1 -> {
                     System.out.print("Enter new Name: ");
-                    patient.setName(scanner.nextLine());
+                    String newName = scanner.nextLine();
+                    if (!newName.equals(patient.getName())) {
+                        patient.setName(newName);
+                        infoUpdated = true;
+                    }
                 }
                 case 2 -> {
                     System.out.print("Enter new Password: ");
-                    patient.setPassword(scanner.nextLine());
+                    String newPassword = scanner.nextLine();
+                    if (!newPassword.equals(patient.getPassword())) {
+                        patient.setPassword(newPassword);
+                        infoUpdated = true;
+                    }
                 }
                 case 3 -> {
                     System.out.print("Enter new Birthdate (YYYY-MM-DD): ");
-                    patient.setBday(LocalDate.parse(scanner.nextLine()));
+                    LocalDate newBday = LocalDate.parse(scanner.nextLine());
+                    if (!newBday.equals(patient.getBday())) {
+                        patient.setBday(newBday);
+                        infoUpdated = true;
+                    }
                 }
                 case 4 -> {
                     System.out.print("Enter new Place of Birth: ");
-                    patient.setPlaceOfBirth(scanner.nextLine());
+                    String newPlaceOfBirth = scanner.nextLine();
+                    if (!newPlaceOfBirth.equals(patient.getPlaceOfBirth())) {
+                        patient.setPlaceOfBirth(newPlaceOfBirth);
+                        infoUpdated = true;
+                    }
                 }
                 case 5 -> {
                     System.out.print("Enter new Gender (Male/Female): ");
                     String genderInput = scanner.nextLine().trim();
-                    
+
+                    Gender newGender = null;
                     if (genderInput.equalsIgnoreCase("Female")) {
-                        patient.setGender(Gender.Female); 
+                        newGender = Gender.Female;
                     } else if (genderInput.equalsIgnoreCase("Male")) {
-                        patient.setGender(Gender.Male); 
+                        newGender = Gender.Male;
                     } else {
                         System.out.println("Invalid gender. Please enter 'Male' or 'Female'.");
+                    }
+
+                    if (newGender != null && !newGender.equals(patient.getGender())) {
+                        patient.setGender(newGender);
+                        infoUpdated = true;
                     }
                 }
                 case 6 -> {
                     System.out.print("Enter new Email: ");
-                    patient.setEmail(scanner.nextLine());
+                    String newEmail = scanner.nextLine();
+                    if (!newEmail.equals(patient.getEmail())) {
+                        patient.setEmail(newEmail);
+                        infoUpdated = true;
+                    }
                 }
                 case 7 -> {
                     System.out.print("Enter new Contact Number: ");
-                    patient.setContactNo(scanner.nextLine());
+                    String newContactNo = scanner.nextLine();
+                    if (!newContactNo.equals(patient.getContactNo())) {
+                        patient.setContactNo(newContactNo);
+                        infoUpdated = true;
+                    }
                 }
                 case 8 -> {
                     System.out.print("Enter new Emergency Contact: ");
-                    patient.setEmergencyNo(scanner.nextLine());
+                    String newEmergencyNo = scanner.nextLine();
+                    if (!newEmergencyNo.equals(patient.getEmergencyNo())) {
+                        patient.setEmergencyNo(newEmergencyNo);
+                        infoUpdated = true;
+                    }
                 }
                 case 9 -> {
                     System.out.print("Enter new Address: ");
-                    patient.setAddress(scanner.nextLine());
+                    String newAddress = scanner.nextLine();
+                    if (!newAddress.equals(patient.getAddress())) {
+                        patient.setAddress(newAddress);
+                        infoUpdated = true;
+                    }
                 }
                 case 10 -> {
                     System.out.print("Enter new Province: ");
-                    patient.setProvince(scanner.nextLine());
+                    String newProvince = scanner.nextLine();
+                    if (!newProvince.equals(patient.getProvince())) {
+                        patient.setProvince(newProvince);
+                        infoUpdated = true;
+                    }
                 }
                 case 11 -> {
                     System.out.print("Enter new City: ");
-                    patient.setCity(scanner.nextLine());
+                    String newCity = scanner.nextLine();
+                    if (!newCity.equals(patient.getCity())) {
+                        patient.setCity(newCity);
+                        infoUpdated = true;
+                    }
                 }
                 case 12 -> {
                     System.out.print("Enter new Barangay: ");
-                    patient.setBarangay(scanner.nextLine());
+                    String newBarangay = scanner.nextLine();
+                    if (!newBarangay.equals(patient.getBarangay())) {
+                        patient.setBarangay(newBarangay);
+                        infoUpdated = true;
+                    }
                 }
                 case 13 -> {
                     System.out.print("Enter new Nationality: ");
-                    patient.setNationality(scanner.nextLine());
+                    String newNationality = scanner.nextLine();
+                    if (!newNationality.equals(patient.getNationality())) {
+                        patient.setNationality(newNationality);
+                        infoUpdated = true;
+                    }
                 }
                 case 14 -> {
                     System.out.print("Enter new Marital Status: ");
-                    patient.setMaritalStatus(scanner.nextLine());
+                    String newMaritalStatus = scanner.nextLine();
+                    if (!newMaritalStatus.equals(patient.getMaritalStatus())) {
+                        patient.setMaritalStatus(newMaritalStatus);
+                        infoUpdated = true;
+                    }
                 }
                 case 15 -> {
                     System.out.print("Enter new Allergy Info: ");
-                    patient.setAllergy(scanner.nextLine());
+                    String newAllergy = scanner.nextLine();
+                    if (!newAllergy.equals(patient.getAllergy())) {
+                        patient.setAllergy(newAllergy);
+                        infoUpdated = true;
+                    }
                 }
                 case 16 -> {
                     System.out.print("Enter new Past Medical History: ");
-                    patient.setPast(scanner.nextLine());
+                    String newPast = scanner.nextLine();
+                    if (!newPast.equals(patient.getPast())) {
+                        patient.setPast(newPast);
+                        infoUpdated = true;
+                    }
                 }
                 case 17 -> {
                     System.out.print("Enter new Blood Type: ");
-                    patient.setBloodtype(scanner.nextLine());
+                    String newBloodType = scanner.nextLine();
+                    if (!newBloodType.equals(patient.getBloodtype())) {
+                        patient.setBloodtype(newBloodType);
+                        infoUpdated = true;
+                    }
                 }
                 case 18 -> {
-                    System.out.print("Are you Vaccinated? (yes/no): ");
-                    patient.setVaccinated(scanner.nextLine().equalsIgnoreCase("yes"));
+                        System.out.print("Are you Vaccinated? (yes/no): ");
+                    boolean newVaccinated = scanner.nextLine().equalsIgnoreCase("yes");
+                    if (newVaccinated != patient.isVaccinated()) {
+                        patient.setVaccinated(newVaccinated);
+                        infoUpdated = true;
+                    }
                 }
                 case 19 -> {
                     System.out.print("Do you have a Disability? (yes/no): ");
-                    patient.setHasDisability(scanner.nextLine().equalsIgnoreCase("yes"));
+                    boolean newHasDisability = scanner.nextLine().equalsIgnoreCase("yes");
+                    if (newHasDisability != patient.isHasDisability()) {
+                        patient.setHasDisability(newHasDisability);
+                        infoUpdated = true;
+                    }
                 }
                 case 20 -> {
                     System.out.print("Enter new Disability Details: ");
-                    patient.setDisabilityDetails(scanner.nextLine());
+                    String newDisabilityDetails = scanner.nextLine();
+                    if (!newDisabilityDetails.equals(patient.getDisabilityDetails())) {
+                        patient.setDisabilityDetails(newDisabilityDetails);
+                        infoUpdated = true;
+                    }
                 }
                 case 21 -> {
                     System.out.println("Exiting update menu...");
@@ -604,11 +684,13 @@ public class PatientPanel {
                 default -> System.out.println("Invalid choice. Please try again.");
             }
     
-            patientDao.updatePatient(patient);
-            System.out.println("Patient information updated successfully.");
+            if (infoUpdated) {
+                patientDao.updatePatient(patient);
+                System.out.println("Patient information updated successfully.");
+                infoUpdated = false;
+            }
         }
     }
-
 }
 
 

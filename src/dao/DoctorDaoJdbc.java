@@ -1,4 +1,4 @@
-package connection;
+package dao;
 
 import java.sql.*;
 import java.util.ArrayList;
@@ -18,10 +18,10 @@ public class DoctorDaoJdbc implements DoctorDao {
 
     public boolean login(String doctorId, String password) throws SQLException {
         if (!password.equals(DOCTOR_PASSWORD)) {
-            return false;
+            return false; 
         }
     
-        String query = "SELECT * FROM doctor WHERE Doctor_ID = ?";
+        String query = "SELECT * FROM doctor WHERE Doctor_ID = ? AND employment_status = 'active'";
         try (PreparedStatement ps = connection.prepareStatement(query)) {
             ps.setString(1, doctorId);
             try (ResultSet rs = ps.executeQuery()) {
@@ -29,16 +29,20 @@ public class DoctorDaoJdbc implements DoctorDao {
                     return true; 
                 }
             }
+        } catch (SQLException e) {
+            System.out.println("Error during login: " + e.getMessage());
+            //e.printStackTrace();
         }
         return false; 
     }
+    
     
     @Override
     public Doctor getDoctorById(String doctorId) throws SQLException {
         String query = "SELECT d.Doctor_ID, d.Doctor_Name, dept.Department_Name " +
                        "FROM doctor d " +
                        "JOIN department dept ON d.Department_ID = dept.Department_ID " +
-                       "WHERE d.Doctor_ID = ?";
+                       "WHERE d.Doctor_ID = ? AND d.employment_status = 'active'";
         
         try (PreparedStatement ps = connection.prepareStatement(query)) {
             ps.setString(1, doctorId);
@@ -217,7 +221,7 @@ public class DoctorDaoJdbc implements DoctorDao {
             int rowsUpdated = updateStmt.executeUpdate();
     
             if (rowsUpdated > 0) {
-                System.out.println("Appointment marked as canceled.");
+                //System.out.println("Appointment marked as canceled."); for debugging
                 return true;
             } else {
                 System.out.println("Error: Failed to update the appointment status.");
@@ -231,7 +235,7 @@ public class DoctorDaoJdbc implements DoctorDao {
         String sql = "SELECT d.Doctor_ID, d.Doctor_Name, dep.Department_Name " +
                      "FROM doctor d " +
                      "JOIN department dep ON d.Department_ID = dep.Department_ID " +
-                     "WHERE dep.Department_ID = ?"; 
+                     "WHERE dep.Department_ID = ? AND d.employment_status = 'active'";; 
          
         try (PreparedStatement stmt = connection.prepareStatement(sql)) {
             stmt.setInt(1, departmentId);

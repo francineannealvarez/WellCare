@@ -1,9 +1,10 @@
-package connection;
+package dao;
 
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 import model.Appointment;
+import connection.DatabaseConnection;
 
 public class AppointmentDaoJdbc implements AppointmentDAO {
     private final Connection conn;
@@ -40,7 +41,7 @@ public class AppointmentDaoJdbc implements AppointmentDAO {
                     appointment.setDiagnosis(String.valueOf(generatedKeys.getInt(1)));
                 }
             }
-            System.out.println("Appointment scheduled successfully!");
+            //System.out.println("Appointment successfully booked!"); for debugging
         } catch (SQLException e) {
             System.err.println("Error confirming appointment: " + e.getMessage());
         }

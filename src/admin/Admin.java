@@ -4,7 +4,8 @@ import java.sql.SQLException;
 import java.util.InputMismatchException;
 import java.util.List;
 import java.util.Scanner;
-import connection.AdminDao;
+
+import dao.AdminDao;
 import user.User;
 import display.DisplayUtils;
 

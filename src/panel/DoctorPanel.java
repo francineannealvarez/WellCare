@@ -2,12 +2,7 @@ package panel;
 
 import java.util.Scanner;
 import java.sql.Connection;
-import connection.AdminDao;
-import connection.AdminDaoJdbc;
-import connection.DoctorDao;
-import connection.DoctorDaoJdbc;
-import connection.PatientDao;
-import connection.PatientDaoJdbc;
+
 import model.Patient;
 import java.sql.SQLException;
 import java.util.InputMismatchException;
@@ -21,6 +16,12 @@ import model.AvailableTime;
 import model.MedicalHistory;
 import model.Doctor;
 import admin.Admin;
+import dao.AdminDao;
+import dao.AdminDaoJdbc;
+import dao.DoctorDao;
+import dao.DoctorDaoJdbc;
+import dao.PatientDao;
+import dao.PatientDaoJdbc;
 
 public class DoctorPanel {  
         private DisplayUtils display;
@@ -38,6 +39,7 @@ public class DoctorPanel {
     }
    
     public void signIn(Scanner scanner, Admin admin) {
+        display.printHeader("LOG IN");
         System.out.print("Enter Doctor's ID: ");
         String doctorId = scanner.nextLine();
         System.out.print("Enter password: ");
@@ -61,12 +63,13 @@ public class DoctorPanel {
             System.out.println("Error during login: " + e.getMessage());
         }
     }
+
     public void showOptions(Scanner scanner) throws SQLException {
         boolean exit = false;
 
         while (!exit) {
             display.printHeader("DOCTOR'S MENU");
-            System.out.println("\nSelect an option:");
+            System.out.println("Select an option:");
             System.out.println("1. Add available time");
             System.out.println("2. Delete available time");
             System.out.println("3. View schedule");
@@ -79,7 +82,7 @@ public class DoctorPanel {
 
             try {
                 int choice = scanner.nextInt();
-                scanner.nextLine();  // consume the newline character
+                scanner.nextLine(); 
             
                 switch (choice) {
                     case 1 -> addAvailableTime(scanner);
@@ -129,7 +132,6 @@ public class DoctorPanel {
             return;
         }
 
-        // Display the available times
         System.out.println("Available appointment slots:");
         for (int i = 0; i < availableTimes.size(); i++) {
             System.out.println((i + 1) + ". " + availableTimes.get(i).getAvailableTime());
@@ -210,7 +212,7 @@ public class DoctorPanel {
     
     public void addDiagnosisToPatient(Scanner scanner) {
         display.printHeader("ADD DIAGNOSIS TO PATIENT");
-
+    
         List<Appointment> appointments;
         try {
             appointments = doctorDao.getDoctorAppointments(loggedInDoctor.getDoctorId());
@@ -218,22 +220,28 @@ public class DoctorPanel {
             System.out.println("Error fetching appointments: " + e.getMessage());
             return;
         }
-
+    
         if (appointments.isEmpty()) {
             System.out.println("No appointments available for diagnosis.");
             return;
         }
-
+    
         TableDisplay appointmentTable = new AppointmentTableDisplay(appointments);
         appointmentTable.printTableHeader();
         ((AppointmentTableDisplay) appointmentTable).printAppointments();
-
+    
         int selectedAppointmentId = -1;
         while (true) {
-            System.out.print("Enter the Appointment ID to add a diagnosis: ");
-            if (scanner.hasNextInt()) {
-                selectedAppointmentId = scanner.nextInt();
-                scanner.nextLine(); 
+            System.out.print("Enter the Appointment ID to add a diagnosis (or type 'back' to return to the doctor menu): ");
+            String input = scanner.nextLine().trim();
+    
+            if (input.equalsIgnoreCase("back")) {
+                System.out.println("Returning to the doctor's menu.");
+                return; 
+            }
+    
+            try {
+                selectedAppointmentId = Integer.parseInt(input);
                 boolean valid = false;
                 for (Appointment appointment : appointments) {
                     if (appointment.getAppointmentId() == selectedAppointmentId && "Scheduled".equals(appointment.getStatus())) {
@@ -244,17 +252,16 @@ public class DoctorPanel {
                 if (valid) {
                     break;
                 } else {
-                    System.out.println("Invalid Appointment ID. Please try again.");
+                    System.out.println("Invalid Appointment ID or the appointment is not scheduled. Please try again.");
                 }
-            } else {
+            } catch (NumberFormatException e) {
                 System.out.println("Invalid input. Please enter a valid Appointment ID.");
-                scanner.nextLine(); 
             }
         }
-
+    
         System.out.print("Enter the diagnosis for the selected appointment: ");
         String diagnosis = scanner.nextLine();
-
+    
         try {
             Appointment selectedAppointment = null;
             for (Appointment appointment : appointments) {
@@ -263,20 +270,19 @@ public class DoctorPanel {
                     break;
                 }
             }
-
+    
             if (selectedAppointment == null) {
                 System.out.println("Error: Appointment not found.");
                 return;
             }
-
+    
             int departmentId = adminDao.getDepartmentIdByName(selectedAppointment.getDepartment());
             String patientName = doctorDao.getPatientNameById(selectedAppointment.getPatientId());
             String doctorName = doctorDao.getDoctorNameById(selectedAppointment.getDoctorId());
-
+    
             int medicalHistoryId = 0;
-
-            String appointmentTime = selectedAppointment.getAppointmentTime(); 
-
+            String appointmentTime = selectedAppointment.getAppointmentTime();
+    
             MedicalHistory medicalHistory = new MedicalHistory(
                 medicalHistoryId,
                 selectedAppointment.getPatientId(),
@@ -285,16 +291,16 @@ public class DoctorPanel {
                 selectedAppointment.getAppointmentId(),
                 selectedAppointment.getMedicalCondition(),
                 diagnosis,
-                patientName, 
-                doctorName,   
-                selectedAppointment.getDepartment(), 
-                appointmentTime 
+                patientName,
+                doctorName,
+                selectedAppointment.getDepartment(),
+                appointmentTime
             );
-
+    
             doctorDao.updateAppointmentStatusToCompleted(selectedAppointmentId);
             doctorDao.addToMedicalHistory(medicalHistory);
             System.out.println("Appointment moved to the patient's medical history.");
-
+    
         } catch (SQLException e) {
             System.out.println("Error processing the diagnosis: " + e.getMessage());
         }
@@ -364,7 +370,6 @@ public class DoctorPanel {
         Patient foundPatient = patientDao.getPatientDetails(patientId);
 
         if (foundPatient != null) {
-            // Display patient details
             System.out.println("\nPatient Details:");
             System.out.println("---------------------------------------------------");
             System.out.println("ID: " + foundPatient.getUniqueId());
