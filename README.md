@@ -10,7 +10,7 @@ Built using Object-Oriented Programming (OOP) principles, **WellCare** offers an
 
  ##**Key Features ✨**
 
-🔑 **Patient Registration & Login**: Secure patient sign-in functionality allows patients to create and manage their profiles. Once logged in, they can view appointment histories, make new bookings, and manage their details.
+🔑 **Patient Registration & Login**: Secure patient sign-in functionality allows patients to create and manage their profiles. Once logged in, they can view appointment histories, make new bookings, and update their entered information whenever needed, ensuring their profile stays up-to-date.
 
 🗓️ **Appointment Booking**: Patients can easily browse available departments and schedule appointments with doctors based on their availability.
 
