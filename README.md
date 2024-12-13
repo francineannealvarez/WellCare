@@ -18,6 +18,8 @@ Built using Object-Oriented Programming (OOP) principles, **WellCare** offers an
 
 👨‍⚕️ **Doctor Schedule Management**: Doctors can set, update, and view their availability for appointments. This feature allows doctors to manage their daily schedules efficiently and ensure patients book at available times.
 
+💊 **Add Diagnoses**: Doctors can add diagnoses to completed appointments, which will automatically be saved as part of the patient's medical history. This feature ensures accurate record-keeping and better continuity of care.
+
 ❌ **Appointment Cancellation**: Doctors have the ability to cancel appointments with an optional reason, which will be visible to the patients, ensuring transparency.
 
 🛠️ **Admin Features**: Admins have full control over the system, including the ability to add or remove doctors and departments. This feature helps manage and update the hospital booking system as needed.
