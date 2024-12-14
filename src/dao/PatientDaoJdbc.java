@@ -50,19 +50,24 @@ public class PatientDaoJdbc implements PatientDao {
     }
 
     public String generateUniqueId() throws SQLException {
-        String date = java.time.LocalDate.now().toString().replace("-", "");
-        
-        String query = "SELECT COUNT(*) FROM patient WHERE Patient_ID LIKE ?";
-        
+        String date = java.time.LocalDate.now().toString().replace("-", ""); // Signup date in YYYYMMDD format
+    
+        // Query to find the maximum numeric part of the Patient_ID across all records
+        String query = "SELECT MAX(CAST(SUBSTRING(Patient_ID, 9) AS UNSIGNED)) FROM patient";
+    
         try (PreparedStatement stmt = connection.prepareStatement(query)) {
-            stmt.setString(1, date + "%");  
             try (ResultSet rs = stmt.executeQuery()) {
-                rs.next();
-                int patientNumber = rs.getInt(1) + 1; 
-                return date + String.format("%04d", patientNumber);  
+                int nextNumber = 1; // Default starting number
+                if (rs.next() && rs.getString(1) != null) {
+                    // Increment the highest numeric part of Patient_ID found
+                    nextNumber = rs.getInt(1) + 1;
+                }
+                // Combine the date with the globally incremented number
+                return date + String.format("%04d", nextNumber);
             }
         }
     }
+    
 
     @Override
     public Patient login(String name, String password) {

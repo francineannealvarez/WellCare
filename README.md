@@ -179,7 +179,7 @@ By integrating these features, the project aligns with SDG 3 by making healthcar
 ## Project File Structure 📁
 
 Here is the structure of the project:
-
+s
 ```
 ├── db/                             # SQL files
 │   ├── init.sql                   # SQL schema file
